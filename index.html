@@ -45,34 +45,29 @@
         <section class="panel setup-panel">
           <div class="panel-heading">
             <div>
-              <p class="section-label">Setup</p>
-              <h2>Connect your backend</h2>
+              <p class="section-label">Connection</p>
+              <h2>Live backend connected</h2>
             </div>
-            <button id="clear-api-url" class="ghost-button" type="button">Clear URL</button>
+            <a
+              class="ghost-button button-link"
+              href="https://oil-price-tracker-api.onrender.com/api/health"
+              target="_blank"
+              rel="noreferrer"
+            >
+              API health
+            </a>
           </div>
           <p class="panel-copy">
-            The frontend can stay on GitHub Pages, but the API key belongs on a backend.
-            Enter your deployed backend URL and this site will fetch oil data from it.
+            This frontend is already connected to the production backend, so visitors can
+            open the site and use it immediately.
           </p>
-          <form id="backend-form" class="api-form">
-            <label class="field">
-              <span class="field-label">Backend base URL</span>
-              <input
-                id="api-base-url"
-                name="apiBaseUrl"
-                type="url"
-                placeholder="https://your-backend.onrender.com"
-                autocomplete="off"
-                spellcheck="false"
-                required
-              />
-            </label>
-            <button class="primary-button" type="submit">Save and load prices</button>
-          </form>
           <p class="helper-text">
-            Expected endpoint: <code>/api/oil</code> returning WTI and Brent history.
+            Backend:
+            <a href="https://oil-price-tracker-api.onrender.com" target="_blank" rel="noreferrer">
+              oil-price-tracker-api.onrender.com
+            </a>
           </p>
-          <p id="status" class="status" role="status">Enter your backend URL to start.</p>
+          <p id="status" class="status" role="status">Connecting to live oil data...</p>
         </section>
 
         <section class="metrics-grid">

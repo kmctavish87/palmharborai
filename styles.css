@@ -182,10 +182,14 @@ button {
   border-radius: 999px;
   font: inherit;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .primary-button,
 .ghost-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 48px;
   padding: 0 18px;
   transition: transform 160ms ease, opacity 160ms ease, background 160ms ease;
@@ -199,6 +203,10 @@ button {
 .ghost-button {
   color: var(--ink);
   background: rgba(23, 20, 17, 0.06);
+}
+
+.button-link {
+  white-space: nowrap;
 }
 
 button:hover {

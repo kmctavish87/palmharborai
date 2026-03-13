@@ -7,7 +7,7 @@ Oil price tracker with:
 - Day-over-day change
 - 30-day comparison chart
 
-The frontend can stay on GitHub Pages. The backend is a small Node/Express API that keeps the EIA key on the server.
+The frontend is published on GitHub Pages and is preconfigured to use the production backend at `https://oil-price-tracker-api.onrender.com`. The backend is a small Node/Express API that keeps the EIA key on the server.
 
 ## Files
 
@@ -49,13 +49,15 @@ The frontend can stay on GitHub Pages. The backend is a small Node/Express API t
 
 ## Frontend local use
 
-Serve the frontend directory and enter `http://localhost:3000` as the backend URL:
+Serve the frontend directory:
 
 ```bash
 python3 -m http.server 4173
 ```
 
 Then open `http://localhost:4173`.
+
+If you want local frontend-to-local backend testing, update `API_BASE_URL` in `app.js` temporarily.
 
 ## GitHub Pages deployment
 
@@ -65,7 +67,7 @@ Then open `http://localhost:4173`.
 4. Under `Build and deployment`, set `Source` to `GitHub Actions`.
 5. Push to `main` or run the `Deploy static site to Pages` workflow manually.
 6. Deploy the backend separately on a Node host.
-7. Open the published Pages URL and enter your backend base URL in the app.
+7. Open the published Pages URL. It is already wired to the production backend.
 
 The `.nojekyll` file is included so GitHub Pages serves the site as plain static content.
 

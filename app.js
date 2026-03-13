@@ -1,4 +1,4 @@
-const STORAGE_KEY = "oil-tracker-api-base-url";
+const API_BASE_URL = "https://oil-price-tracker-api.onrender.com";
 const REFRESH_INTERVAL_MS = 15 * 60 * 1000;
 const SERIES = {
   wti: {
@@ -12,9 +12,6 @@ const SERIES = {
 };
 
 const elements = {
-  apiForm: document.querySelector("#backend-form"),
-  apiKeyInput: document.querySelector("#api-base-url"),
-  clearKeyButton: document.querySelector("#clear-api-url"),
   refreshButton: document.querySelector("#refresh-data"),
   status: document.querySelector("#status"),
   prices: {
@@ -38,44 +35,10 @@ let refreshTimer;
 initialize();
 
 function initialize() {
-  const savedKey = window.localStorage.getItem(STORAGE_KEY);
-
-  if (savedKey) {
-    elements.apiKeyInput.value = savedKey;
-    void loadDashboard(savedKey);
-  }
-
-  elements.apiForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const apiKey = normalizeBaseUrl(elements.apiKeyInput.value);
-
-    if (!apiKey) {
-      setStatus("Enter a valid backend URL.", "error");
-      return;
-    }
-
-    window.localStorage.setItem(STORAGE_KEY, apiKey);
-    elements.apiKeyInput.value = apiKey;
-    await loadDashboard(apiKey);
-  });
-
-  elements.clearKeyButton.addEventListener("click", () => {
-    window.localStorage.removeItem(STORAGE_KEY);
-    elements.apiKeyInput.value = "";
-    clearDashboard();
-    setStatus("Backend URL removed. Enter a URL to start.", "default");
-    stopAutoRefresh();
-  });
+  void loadDashboard(API_BASE_URL);
 
   elements.refreshButton.addEventListener("click", async () => {
-    const apiKey = normalizeBaseUrl(elements.apiKeyInput.value);
-
-    if (!apiKey) {
-      setStatus("Add a backend URL before refreshing.", "error");
-      return;
-    }
-
-    await loadDashboard(apiKey);
+    await loadDashboard(API_BASE_URL);
   });
 }
 
@@ -241,8 +204,6 @@ function setStatus(message, tone) {
 
 function toggleLoading(isLoading) {
   elements.refreshButton.disabled = isLoading;
-  elements.clearKeyButton.disabled = isLoading;
-  elements.apiForm.querySelector("button[type='submit']").disabled = isLoading;
 }
 
 function scheduleAutoRefresh(apiKey) {
@@ -275,19 +236,4 @@ function formatDate(value, compact = false) {
     day: "numeric",
     year: compact ? undefined : "numeric",
   }).format(date);
-}
-
-function normalizeBaseUrl(value) {
-  const trimmed = value.trim().replace(/\/+$/, "");
-
-  if (!trimmed) {
-    return "";
-  }
-
-  try {
-    const url = new URL(trimmed);
-    return url.origin + url.pathname.replace(/\/+$/, "");
-  } catch (_error) {
-    return "";
-  }
 }
