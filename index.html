@@ -1,93 +1,174 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Oil Price Tracker</title>
+    <title>PalmHarbor.ai | AI Made Practical</title>
     <meta
       name="description"
-      content="Live WTI and Brent crude oil tracker powered by the U.S. EIA API."
+      content="PalmHarbor.ai helps beginners and small businesses understand AI, discover useful tools, and explore practical project ideas."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
-    <script src="./app.js" defer></script>
   </head>
   <body>
-    <div class="page-shell">
-      <header class="hero">
-        <p class="eyebrow">GitHub Pages Ready</p>
-        <div class="hero-copy">
-          <h1>Live crude oil pricing with a real backend.</h1>
-          <p>
-            Track West Texas Intermediate and Brent spot prices with intraday refreshes,
-            historical context, and a server-side EIA integration.
-          </p>
-        </div>
-        <div class="hero-meta">
-          <div>
-            <span class="meta-label">Source</span>
-            <span class="meta-value">U.S. Energy Information Administration</span>
-          </div>
-          <div>
-            <span class="meta-label">Refresh</span>
-            <span class="meta-value">Every 15 minutes</span>
-          </div>
-        </div>
+    <div class="site-shell">
+      <header class="topbar">
+        <a class="brand" href="#top">PalmHarbor.ai</a>
+        <nav class="nav" aria-label="Primary navigation">
+          <a href="#features">Topics</a>
+          <a href="#projects">Examples</a>
+          <a href="#cta">Get Started</a>
+        </nav>
       </header>
 
-      <main class="dashboard">
-        <section class="metrics-grid">
-          <article class="panel metric-card" data-series="wti">
-            <p class="section-label">WTI</p>
-            <h2>West Texas Intermediate</h2>
-            <p class="price" id="wti-price">--</p>
-            <p class="delta" id="wti-delta">Waiting for data</p>
-            <p class="timestamp" id="wti-date">--</p>
-          </article>
-          <article class="panel metric-card" data-series="brent">
-            <p class="section-label">Brent</p>
-            <h2>North Sea Brent</h2>
-            <p class="price" id="brent-price">--</p>
-            <p class="delta" id="brent-delta">Waiting for data</p>
-            <p class="timestamp" id="brent-date">--</p>
-          </article>
+      <main id="top">
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">AI for beginners and small businesses</p>
+            <h1>Welcome to PalmHarbor.ai</h1>
+            <p class="hero-text">
+              Learn AI without the jargon. PalmHarbor.ai breaks down important concepts, recommends
+              useful tools, and shows practical examples that small businesses can actually use.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#features">Explore Topics</a>
+              <a class="button button-secondary" href="#projects">View Examples</a>
+            </div>
+            <ul class="hero-points" aria-label="Key benefits">
+              <li>Simple explanations for non-technical readers</li>
+              <li>Curated AI tools worth trying</li>
+              <li>Real business use cases with clear outcomes</li>
+            </ul>
+          </div>
+
+          <div class="hero-visual" aria-hidden="true">
+            <div class="glass-card glass-card-large">
+              <span class="stat-label">Starter Path</span>
+              <strong>Learn AI in practical steps</strong>
+              <p>Topics, tools, and examples designed for people who want useful results fast.</p>
+            </div>
+            <div class="glass-card glass-card-small card-a">
+              <span class="mini-tag">Topics</span>
+              <strong>Prompting</strong>
+            </div>
+            <div class="glass-card glass-card-small card-b">
+              <span class="mini-tag">Tools</span>
+              <strong>Automate tasks</strong>
+            </div>
+            <div class="glass-card glass-card-small card-c">
+              <span class="mini-tag">Projects</span>
+              <strong>Support bots</strong>
+            </div>
+          </div>
         </section>
 
-        <section class="panel chart-panel">
-          <div class="panel-heading">
+        <section class="features section" id="features">
+          <div class="section-heading">
+            <p class="eyebrow">What you’ll find</p>
+            <h2>AI content built for clarity and action</h2>
+            <p>
+              Everything on PalmHarbor.ai is organized to help beginners understand what AI is,
+              which tools matter, and how to apply it inside a real business.
+            </p>
+          </div>
+
+          <div class="feature-grid">
+            <article class="feature-card">
+              <div class="icon-badge badge-orange">01</div>
+              <h3>Beginner AI Topics</h3>
+              <p>
+                Clear guides on prompts, chatbots, automation, and common AI terms without
+                technical overload.
+              </p>
+            </article>
+
+            <article class="feature-card">
+              <div class="icon-badge badge-pink">02</div>
+              <h3>Recommendations</h3>
+              <p>
+                Straightforward suggestions for AI tools that help with writing, workflows,
+                research, and customer communication.
+              </p>
+            </article>
+
+            <article class="feature-card">
+              <div class="icon-badge badge-blue">03</div>
+              <h3>Project Examples</h3>
+              <p>
+                Practical examples showing how small businesses can use AI to save time, improve
+                consistency, and serve customers better.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="projects section" id="projects">
+          <div class="section-heading">
+            <p class="eyebrow">Example projects</p>
+            <h2>Practical AI ideas for everyday business work</h2>
+            <p>
+              These are the kinds of projects PalmHarbor.ai highlights: simple, useful, and
+              realistic for small teams.
+            </p>
+          </div>
+
+          <div class="project-grid">
+            <article class="project-card project-marketing">
+              <span class="project-label">Marketing</span>
+              <h3>Content generation</h3>
+              <p>
+                Draft blog posts, ad copy, social captions, and email campaigns faster while
+                keeping your brand voice consistent.
+              </p>
+            </article>
+
+            <article class="project-card project-operations">
+              <span class="project-label">Operations</span>
+              <h3>Workflow automation</h3>
+              <p>
+                Use AI to summarize documents, route requests, organize data, and automate repeated
+                admin tasks.
+              </p>
+            </article>
+
+            <article class="project-card project-support">
+              <span class="project-label">Customer Support</span>
+              <h3>AI assistants</h3>
+              <p>
+                Answer common questions, guide visitors, and improve response speed with a helpful
+                support assistant.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="cta section" id="cta">
+          <div class="cta-panel">
             <div>
-              <p class="section-label">Trend</p>
-              <h2 id="chart-title">Last 30 reported days</h2>
+              <p class="eyebrow">Start here</p>
+              <h2>Make AI feel useful, not overwhelming</h2>
+              <p>
+                PalmHarbor.ai is designed to turn AI into something approachable for founders,
+                operators, and curious beginners.
+              </p>
             </div>
-            <div class="chart-actions">
-              <p id="status" class="status" role="status">Connecting to live oil data...</p>
-              <button id="refresh-data" class="ghost-button" type="button">Refresh now</button>
-            </div>
-          </div>
-          <div class="range-selector" role="group" aria-label="Chart range">
-            <button class="range-button" type="button" data-range="1d">1D</button>
-            <button class="range-button" type="button" data-range="5d">5D</button>
-            <button class="range-button is-active" type="button" data-range="30d">30D</button>
-            <button class="range-button" type="button" data-range="90d">90D</button>
-            <button class="range-button" type="button" data-range="1y">1Y</button>
-            <button class="range-button" type="button" data-range="5y">5Y</button>
-            <button class="range-button" type="button" data-range="10y">10Y</button>
-          </div>
-          <div class="chart-wrap">
-            <canvas id="price-chart" aria-label="Oil price chart" role="img"></canvas>
-          </div>
-          <div class="legend-note">
-            <span class="legend-swatch legend-wti"></span> WTI
-            <span class="legend-swatch legend-brent"></span> Brent
+            <a class="button button-primary" href="#top">Explore PalmHarbor.ai</a>
           </div>
         </section>
       </main>
+
+      <footer class="footer">
+        <p>© <span id="year"></span> PalmHarbor.ai</p>
+        <p>AI topics, recommendations, and practical examples for small businesses.</p>
+      </footer>
     </div>
+
+    <script src="./script.js"></script>
   </body>
 </html>
