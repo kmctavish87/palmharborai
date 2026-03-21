@@ -76,6 +76,10 @@ a {
   font-weight: 600;
 }
 
+.nav a.active {
+  color: var(--text);
+}
+
 .hero,
 .feature-card,
 .project-card,
@@ -310,6 +314,31 @@ a {
 
 .section {
   margin-top: 28px;
+}
+
+.subpage-hero {
+  padding: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: var(--radius-xl);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(255, 247, 241, 0.84)),
+    linear-gradient(135deg, rgba(72, 120, 255, 0.08), rgba(25, 197, 182, 0.08));
+  box-shadow: var(--shadow);
+}
+
+.subpage-hero h1 {
+  max-width: 14ch;
+  margin: 0;
+  font-size: clamp(3rem, 6vw, 5rem);
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+.subpage-text {
+  max-width: 62ch;
+  margin: 18px 0 0;
+  color: var(--muted);
+  line-height: 1.7;
 }
 
 .section-heading {
