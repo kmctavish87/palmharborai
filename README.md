@@ -1,6 +1,6 @@
-# PalmHarbor.ai
+# palmharborai.com
 
-PalmHarbor.ai is a static homepage for a beginner-friendly AI website focused on:
+palmharborai.com is a static homepage for a beginner-friendly AI website focused on:
 
 - explaining AI topics simply
 - recommending useful AI tools
