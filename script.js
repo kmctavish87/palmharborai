@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const PINELLAS_YEARS = Array.from({ length: 11 }, (_, index) => 2015 + index);
 
-const PINELLAS_ZIP_CONFIG = {
+const PINELLAS_FALLBACK_ZIP_CONFIG = {
   "33701": {
     area: "Downtown St. Petersburg",
     basePrice: 328000,
@@ -144,8 +144,8 @@ function buildPinellasHistory(zipCode, config) {
   });
 }
 
-const PINELLAS_HOUSING_DATA = Object.fromEntries(
-  Object.entries(PINELLAS_ZIP_CONFIG).map(([zipCode, config]) => [
+const PINELLAS_FALLBACK_HOUSING_DATA = Object.fromEntries(
+  Object.entries(PINELLAS_FALLBACK_ZIP_CONFIG).map(([zipCode, config]) => [
     zipCode,
     {
       area: config.area,
@@ -161,6 +161,8 @@ function initPinellasHousingTool() {
     return;
   }
 
+  const housingData = window.PINELLAS_HOUSING_DATA || PINELLAS_FALLBACK_HOUSING_DATA;
+
   const zipToggleGroup = document.getElementById("zipToggleGroup");
   const selectedZipLabel = document.getElementById("selectedZipLabel");
   const selectedZipArea = document.getElementById("selectedZipArea");
@@ -170,7 +172,7 @@ function initPinellasHousingTool() {
   const salesChangeLabel = document.getElementById("salesChangeLabel");
   const historyTableBody = document.getElementById("historyTableBody");
 
-  const availableZips = Object.keys(PINELLAS_HOUSING_DATA);
+  const availableZips = Object.keys(housingData);
   let activeZip = availableZips[0];
 
   availableZips.forEach((zipCode) => {
@@ -227,7 +229,7 @@ function initPinellasHousingTool() {
   });
 
   function updateDashboard() {
-    const currentData = PINELLAS_HOUSING_DATA[activeZip];
+    const currentData = housingData[activeZip];
     const firstYear = currentData.history[0];
     const latestYear = currentData.history[currentData.history.length - 1];
 

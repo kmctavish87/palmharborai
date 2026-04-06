@@ -38,8 +38,8 @@
           <h1>Track housing trends by ZIP code on one screen.</h1>
           <p class="subpage-text">
             Toggle through Pinellas County ZIP codes to view annual history for average home price
-            and home sales from 2015 onward. This page is set up as a ready-to-use dashboard with
-            starter embedded data, and it can be swapped to your preferred live data source later.
+            and home sales from 2015 onward. This version now uses the Pinellas sales export you
+            added, summarized into ZIP-level annual trends for qualified sales records.
           </p>
           <a class="back-link" href="/local-help">← Back to Local Help</a>
         </section>
@@ -54,8 +54,8 @@
               </p>
             </div>
             <div class="tool-note">
-              <strong>Starter dataset</strong>
-              <p>Annual demo trend view from 2015 through 2025, ready for a live feed.</p>
+              <strong>Source and filters</strong>
+              <p>Built from your advanced search CSV using 2015-2025 sales with positive prices and qualified sale codes 01 and 02.</p>
             </div>
           </div>
 
@@ -130,6 +130,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="./pinellas-housing-data.js"></script>
     <script src="./script.js"></script>
   </body>
 </html>
