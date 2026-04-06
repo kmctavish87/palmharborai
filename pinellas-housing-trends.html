@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>palmharborai.com | Pinellas Housing Trends</title>
+    <meta
+      name="description"
+      content="Explore Pinellas County housing trends by ZIP code, including average home price and annual home sales history from 2015 onward."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="topbar">
+        <a class="brand" href="/">palmharborai.com</a>
+        <nav class="nav" aria-label="Primary navigation">
+          <a href="/models">Models</a>
+          <a class="active" href="/local-help">Local Help</a>
+          <a href="/automations">Automations</a>
+          <a href="/reports">Reports</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="subpage-hero section">
+          <div class="breadcrumbs" aria-label="Breadcrumb">
+            <a href="/">Home</a><span>›</span><a href="/local-help">Local Help</a><span>›</span
+            ><a href="/pinellas-housing-trends">Pinellas Housing Trends</a>
+          </div>
+          <p class="eyebrow">Pinellas County</p>
+          <h1>Track housing trends by ZIP code on one screen.</h1>
+          <p class="subpage-text">
+            Toggle through Pinellas County ZIP codes to view annual history for average home price
+            and home sales from 2015 onward. This page is set up as a ready-to-use dashboard with
+            starter embedded data, and it can be swapped to your preferred live data source later.
+          </p>
+          <a class="back-link" href="/local-help">← Back to Local Help</a>
+        </section>
+
+        <section class="housing-tool section" id="pinellasHousingTool">
+          <div class="tool-header">
+            <div>
+              <p class="eyebrow housing-eyebrow">Interactive Dashboard</p>
+              <h2>Pinellas Housing Trends</h2>
+              <p class="tool-text">
+                Choose a ZIP code to update the charts, summary cards, and annual history table.
+              </p>
+            </div>
+            <div class="tool-note">
+              <strong>Starter dataset</strong>
+              <p>Annual demo trend view from 2015 through 2025, ready for a live feed.</p>
+            </div>
+          </div>
+
+          <div class="zip-toggle-wrap">
+            <p class="toggle-label">Select a ZIP code</p>
+            <div class="zip-toggle-group" id="zipToggleGroup" role="tablist" aria-label="Pinellas ZIP codes"></div>
+          </div>
+
+          <div class="housing-stat-grid">
+            <article class="housing-stat-card">
+              <span class="housing-stat-label">Selected ZIP</span>
+              <strong id="selectedZipLabel">33701</strong>
+              <p id="selectedZipArea">Downtown St. Petersburg</p>
+            </article>
+
+            <article class="housing-stat-card">
+              <span class="housing-stat-label">Average Home Price</span>
+              <strong id="latestAveragePrice">$0</strong>
+              <p id="priceGrowthLabel">Since 2015: 0%</p>
+            </article>
+
+            <article class="housing-stat-card">
+              <span class="housing-stat-label">Annual Home Sales</span>
+              <strong id="latestSalesCount">0</strong>
+              <p id="salesChangeLabel">Since 2015: 0%</p>
+            </article>
+          </div>
+
+          <div class="chart-grid">
+            <article class="chart-panel">
+              <div class="chart-copy">
+                <span class="chart-kicker">Price history</span>
+                <h3>Average home price by year</h3>
+              </div>
+              <canvas id="priceHistoryChart" aria-label="Average home price chart" role="img"></canvas>
+            </article>
+
+            <article class="chart-panel">
+              <div class="chart-copy">
+                <span class="chart-kicker">Sales history</span>
+                <h3>Home sales by year</h3>
+              </div>
+              <canvas id="salesHistoryChart" aria-label="Home sales chart" role="img"></canvas>
+            </article>
+          </div>
+
+          <article class="history-panel">
+            <div class="chart-copy">
+              <span class="chart-kicker">Annual history</span>
+              <h3>ZIP code timeline</h3>
+            </div>
+            <div class="table-wrap">
+              <table class="history-table">
+                <thead>
+                  <tr>
+                    <th>Year</th>
+                    <th>Average Home Price</th>
+                    <th>Home Sales</th>
+                  </tr>
+                </thead>
+                <tbody id="historyTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>© <span id="year"></span> palmharborai.com</p>
+        <p>Pinellas County housing trend views built for clear local market snapshots.</p>
+      </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>
