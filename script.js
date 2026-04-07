@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function initPinellasHousingTool() {
   const toolRoot = document.getElementById("pinellasHousingTool");
-  const source = window.PINELLAS_HOUSING_DATA;
+  const source = normalizeHousingSource(window.PINELLAS_HOUSING_DATA);
 
   if (!toolRoot || typeof Chart === "undefined" || !source || !source.zips) {
     return;
@@ -238,6 +238,42 @@ function initPinellasHousingTool() {
   }
 
   updateDashboard();
+}
+
+function normalizeHousingSource(source) {
+  if (!source) {
+    return null;
+  }
+
+  if (source.zips) {
+    return source;
+  }
+
+  if (!source.z || !source.o) {
+    return null;
+  }
+
+  const normalizedZips = {};
+
+  Object.entries(source.z).forEach(([zipCode, zipData]) => {
+    const [area, months] = zipData;
+
+    normalizedZips[zipCode] = {
+      area,
+      months: (months || []).map(([month, saleCount, averagePrice, averagePpsf]) => ({
+        month,
+        saleCount,
+        averagePrice,
+        averagePpsf,
+      })),
+    };
+  });
+
+  return {
+    meta: source.m || {},
+    zipOrder: source.o,
+    zips: normalizedZips,
+  };
 }
 
 function aggregateMonthlySeries(selectedZipList, zips, allMonths) {
