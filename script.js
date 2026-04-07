@@ -46,9 +46,9 @@ function initPinellasHousingTool() {
       : latestAvailableMonth;
   const allMonths = buildMonthRange(source.meta?.minMonth || "2015-01", reportingEndMonth);
 
-  cutoffLabel.textContent = `${formatMonthLabel(reportingEndMonth)} is the latest month shown right now.`;
+  cutoffLabel.textContent = `${formatMonthLabel(reportingEndMonth)} is the latest month currently available.`;
   latestMonthRule.textContent =
-    "A month does not appear until the 8th of the following month has passed.";
+    "Monthly results are added after the 8th of the following month.";
 
   zipOrder.forEach((zipCode) => {
     const area = zips[zipCode].area;
