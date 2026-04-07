@@ -1,4 +1,3 @@
-// Update the footer year automatically so the site stays current.
 document.addEventListener("DOMContentLoaded", () => {
   const year = document.getElementById("year");
 
@@ -9,183 +8,100 @@ document.addEventListener("DOMContentLoaded", () => {
   initPinellasHousingTool();
 });
 
-const PINELLAS_YEARS = Array.from({ length: 11 }, (_, index) => 2015 + index);
-
-const PINELLAS_FALLBACK_ZIP_CONFIG = {
-  "33701": {
-    area: "Downtown St. Petersburg",
-    basePrice: 328000,
-    priceGrowth: 0.078,
-    baseSales: 186,
-    salesTrend: 0.004,
-    priceWave: 11000,
-    salesWave: 16,
-  },
-  "33703": {
-    area: "Northeast St. Petersburg",
-    basePrice: 294000,
-    priceGrowth: 0.074,
-    baseSales: 352,
-    salesTrend: 0.003,
-    priceWave: 9500,
-    salesWave: 24,
-  },
-  "33704": {
-    area: "Old Northeast",
-    basePrice: 415000,
-    priceGrowth: 0.071,
-    baseSales: 141,
-    salesTrend: 0.002,
-    priceWave: 14000,
-    salesWave: 11,
-  },
-  "33705": {
-    area: "South St. Petersburg",
-    basePrice: 189000,
-    priceGrowth: 0.082,
-    baseSales: 304,
-    salesTrend: 0.007,
-    priceWave: 8700,
-    salesWave: 22,
-  },
-  "33710": {
-    area: "Jungle Terrace and Tyrone",
-    basePrice: 246000,
-    priceGrowth: 0.073,
-    baseSales: 398,
-    salesTrend: 0.001,
-    priceWave: 9200,
-    salesWave: 25,
-  },
-  "33713": {
-    area: "Central St. Petersburg",
-    basePrice: 205000,
-    priceGrowth: 0.079,
-    baseSales: 322,
-    salesTrend: 0.006,
-    priceWave: 9100,
-    salesWave: 19,
-  },
-  "33755": {
-    area: "Clearwater",
-    basePrice: 214000,
-    priceGrowth: 0.075,
-    baseSales: 336,
-    salesTrend: 0.004,
-    priceWave: 8800,
-    salesWave: 18,
-  },
-  "33756": {
-    area: "Belleair and Clearwater South",
-    basePrice: 238000,
-    priceGrowth: 0.072,
-    baseSales: 277,
-    salesTrend: 0.002,
-    priceWave: 8200,
-    salesWave: 17,
-  },
-  "33761": {
-    area: "Countryside",
-    basePrice: 267000,
-    priceGrowth: 0.069,
-    baseSales: 285,
-    salesTrend: 0.001,
-    priceWave: 7900,
-    salesWave: 15,
-  },
-  "33764": {
-    area: "Mid-County Clearwater",
-    basePrice: 229000,
-    priceGrowth: 0.074,
-    baseSales: 301,
-    salesTrend: 0.003,
-    priceWave: 8600,
-    salesWave: 20,
-  },
-  "33771": {
-    area: "Largo",
-    basePrice: 221000,
-    priceGrowth: 0.076,
-    baseSales: 364,
-    salesTrend: 0.003,
-    priceWave: 8300,
-    salesWave: 21,
-  },
-  "34698": {
-    area: "Dunedin",
-    basePrice: 256000,
-    priceGrowth: 0.077,
-    baseSales: 244,
-    salesTrend: 0.002,
-    priceWave: 9800,
-    salesWave: 14,
-  },
-};
-
-function buildPinellasHistory(zipCode, config) {
-  return PINELLAS_YEARS.map((year, index) => {
-    const priceDrift = Math.sin(index * 0.9 + zipCode.length) * config.priceWave;
-    const salesDrift = Math.cos(index * 0.85 + Number(zipCode.slice(-1))) * config.salesWave;
-
-    const averagePrice = Math.round(
-      config.basePrice * Math.pow(1 + config.priceGrowth, index) + priceDrift
-    );
-
-    const homeSales = Math.max(
-      48,
-      Math.round(config.baseSales * (1 + config.salesTrend * index) + salesDrift)
-    );
-
-    return {
-      year,
-      averagePrice,
-      homeSales,
-    };
-  });
-}
-
-const PINELLAS_FALLBACK_HOUSING_DATA = Object.fromEntries(
-  Object.entries(PINELLAS_FALLBACK_ZIP_CONFIG).map(([zipCode, config]) => [
-    zipCode,
-    {
-      area: config.area,
-      history: buildPinellasHistory(zipCode, config),
-    },
-  ])
-);
-
 function initPinellasHousingTool() {
   const toolRoot = document.getElementById("pinellasHousingTool");
+  const source = window.PINELLAS_HOUSING_DATA;
 
-  if (!toolRoot || typeof Chart === "undefined") {
+  if (!toolRoot || typeof Chart === "undefined" || !source || !source.zips) {
     return;
   }
 
-  const housingData = window.PINELLAS_HOUSING_DATA || PINELLAS_FALLBACK_HOUSING_DATA;
+  const zipOrder = source.zipOrder || Object.keys(source.zips).sort();
+  const zips = source.zips;
+  const selectedZips = new Set([zipOrder[0]]);
 
-  const zipToggleGroup = document.getElementById("zipToggleGroup");
-  const selectedZipLabel = document.getElementById("selectedZipLabel");
-  const selectedZipArea = document.getElementById("selectedZipArea");
+  const zipSummary = document.getElementById("zipSelectionSummary");
+  const zipSelectButton = document.getElementById("zipSelectButton");
+  const zipSelectPanel = document.getElementById("zipSelectPanel");
+  const zipOptionList = document.getElementById("zipOptionList");
+  const selectAllZips = document.getElementById("selectAllZips");
+  const cutoffLabel = document.getElementById("cutoffLabel");
+  const selectedMarketLabel = document.getElementById("selectedMarketLabel");
+  const selectedMarketAreas = document.getElementById("selectedMarketAreas");
+  const latestMonthLabel = document.getElementById("latestMonthLabel");
+  const latestMonthRule = document.getElementById("latestMonthRule");
   const latestAveragePrice = document.getElementById("latestAveragePrice");
-  const priceGrowthLabel = document.getElementById("priceGrowthLabel");
+  const priceChangeLabel = document.getElementById("priceChangeLabel");
+  const latestAveragePpsf = document.getElementById("latestAveragePpsf");
+  const ppsfChangeLabel = document.getElementById("ppsfChangeLabel");
   const latestSalesCount = document.getElementById("latestSalesCount");
   const salesChangeLabel = document.getElementById("salesChangeLabel");
   const historyTableBody = document.getElementById("historyTableBody");
 
-  const availableZips = Object.keys(housingData);
-  let activeZip = availableZips[0];
+  const latestIncludedMonth = getLatestIncludedMonth(new Date());
+  const latestAvailableMonth = getLatestAvailableMonth(zips);
+  const reportingEndMonth =
+    compareMonthKeys(latestIncludedMonth, latestAvailableMonth) < 0
+      ? latestIncludedMonth
+      : latestAvailableMonth;
+  const allMonths = buildMonthRange(source.meta?.minMonth || "2015-01", reportingEndMonth);
 
-  availableZips.forEach((zipCode) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "zip-toggle";
-    button.textContent = zipCode;
-    button.setAttribute("role", "tab");
-    button.addEventListener("click", () => {
-      activeZip = zipCode;
+  cutoffLabel.textContent = `${formatMonthLabel(reportingEndMonth)} is the latest month shown right now.`;
+  latestMonthRule.textContent =
+    "A month does not appear until the 8th of the following month has passed.";
+
+  zipOrder.forEach((zipCode) => {
+    const area = zips[zipCode].area;
+    const label = document.createElement("label");
+    label.className = "zip-option";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = zipCode;
+    checkbox.checked = selectedZips.has(zipCode);
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        selectedZips.add(zipCode);
+      } else if (selectedZips.size > 1) {
+        selectedZips.delete(zipCode);
+      } else {
+        checkbox.checked = true;
+      }
+
       updateDashboard();
     });
-    zipToggleGroup.appendChild(button);
+
+    const copy = document.createElement("span");
+    copy.innerHTML = `<strong>${zipCode}</strong><small>${area}</small>`;
+
+    label.append(checkbox, copy);
+    zipOptionList.appendChild(label);
+  });
+
+  zipSelectButton.addEventListener("click", () => {
+    const isOpen = !zipSelectPanel.hasAttribute("hidden");
+
+    if (isOpen) {
+      zipSelectPanel.setAttribute("hidden", "");
+      zipSelectButton.setAttribute("aria-expanded", "false");
+    } else {
+      zipSelectPanel.removeAttribute("hidden");
+      zipSelectButton.setAttribute("aria-expanded", "true");
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!toolRoot.contains(event.target)) {
+      zipSelectPanel.setAttribute("hidden", "");
+      zipSelectButton.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  selectAllZips.addEventListener("click", () => {
+    selectedZips.clear();
+    zipOrder.forEach((zipCode) => selectedZips.add(zipCode));
+    syncZipOptions();
+    updateDashboard();
   });
 
   const priceChart = new Chart(document.getElementById("priceHistoryChart"), {
@@ -194,18 +110,30 @@ function initPinellasHousingTool() {
       labels: [],
       datasets: [
         {
+          label: "Average Price",
           data: [],
           borderColor: "#ff8a3d",
-          backgroundColor: "rgba(255, 138, 61, 0.18)",
-          fill: true,
-          tension: 0.34,
+          backgroundColor: "rgba(255, 138, 61, 0.16)",
+          yAxisID: "y",
+          tension: 0.26,
           borderWidth: 3,
-          pointRadius: 3,
-          pointHoverRadius: 5,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+        },
+        {
+          label: "Price per Sq. Ft.",
+          data: [],
+          borderColor: "#4878ff",
+          backgroundColor: "rgba(72, 120, 255, 0.14)",
+          yAxisID: "y1",
+          tension: 0.26,
+          borderWidth: 3,
+          pointRadius: 0,
+          pointHoverRadius: 4,
         },
       ],
     },
-    options: createChartOptions("Currency"),
+    options: createPriceChartOptions(),
   });
 
   const salesChart = new Chart(document.getElementById("salesHistoryChart"), {
@@ -214,106 +142,292 @@ function initPinellasHousingTool() {
       labels: [],
       datasets: [
         {
+          label: "Home Sales",
           data: [],
-          borderColor: "#4878ff",
-          backgroundColor: "rgba(72, 120, 255, 0.18)",
+          borderColor: "#19c5b6",
+          backgroundColor: "rgba(25, 197, 182, 0.18)",
           fill: true,
-          tension: 0.34,
+          tension: 0.26,
           borderWidth: 3,
-          pointRadius: 3,
-          pointHoverRadius: 5,
+          pointRadius: 0,
+          pointHoverRadius: 4,
         },
       ],
     },
-    options: createChartOptions("Count"),
+    options: createSalesChartOptions(),
   });
 
   function updateDashboard() {
-    const currentData = housingData[activeZip];
-    const firstYear = currentData.history[0];
-    const latestYear = currentData.history[currentData.history.length - 1];
+    const selectedZipList = zipOrder.filter((zipCode) => selectedZips.has(zipCode));
+    const monthlySeries = aggregateMonthlySeries(selectedZipList, zips, allMonths);
+    const latestMonth = monthlySeries[monthlySeries.length - 1];
+    const previousMonth = monthlySeries[monthlySeries.length - 2] || null;
+    const priorYearMonth = monthlySeries[monthlySeries.length - 13] || null;
 
-    selectedZipLabel.textContent = activeZip;
-    selectedZipArea.textContent = currentData.area;
-    latestAveragePrice.textContent = formatCurrency(latestYear.averagePrice);
-    latestSalesCount.textContent = formatNumber(latestYear.homeSales);
-    priceGrowthLabel.textContent = `Since 2015: ${formatPercentChange(
-      firstYear.averagePrice,
-      latestYear.averagePrice
+    selectedMarketLabel.textContent =
+      selectedZipList.length === 1 ? selectedZipList[0] : `${selectedZipList.length} ZIP codes`;
+    selectedMarketAreas.textContent =
+      selectedZipList.length === 1
+        ? zips[selectedZipList[0]].area
+        : `Combined market view across ${selectedZipList.length} selected ZIP codes`;
+    latestMonthLabel.textContent = formatMonthLabel(latestMonth.month);
+
+    latestAveragePrice.textContent =
+      latestMonth.averagePrice !== null ? formatCurrency(latestMonth.averagePrice) : "N/A";
+    latestAveragePpsf.textContent =
+      latestMonth.averagePpsf !== null ? formatCurrency(latestMonth.averagePpsf) : "N/A";
+    latestSalesCount.textContent = formatNumber(latestMonth.saleCount);
+
+    priceChangeLabel.textContent = buildMetricChangeLabel(
+      latestMonth.averagePrice,
+      previousMonth?.averagePrice,
+      "vs prior month"
+    );
+    ppsfChangeLabel.textContent = buildMetricChangeLabel(
+      latestMonth.averagePpsf,
+      previousMonth?.averagePpsf,
+      "vs prior month"
+    );
+    salesChangeLabel.textContent = `MoM: ${formatPercentChange(
+      previousMonth?.saleCount,
+      latestMonth.saleCount
+    )} | Same month prior year: ${formatPercentChange(
+      priorYearMonth?.saleCount,
+      latestMonth.saleCount
     )}`;
-    salesChangeLabel.textContent = `Since 2015: ${formatPercentChange(
-      firstYear.homeSales,
-      latestYear.homeSales
-    )}`;
 
-    Array.from(zipToggleGroup.children).forEach((button) => {
-      const isActive = button.textContent === activeZip;
-      button.classList.toggle("active", isActive);
-      button.setAttribute("aria-selected", String(isActive));
-    });
+    zipSummary.textContent = buildZipSummary(selectedZipList);
+    zipSelectButton.querySelector(".zip-select-button-text").textContent = buildZipSummary(
+      selectedZipList
+    );
 
-    const labels = currentData.history.map((entry) => String(entry.year));
-
-    priceChart.data.labels = labels;
-    priceChart.data.datasets[0].data = currentData.history.map((entry) => entry.averagePrice);
+    const chartLabels = monthlySeries.map((entry) => entry.month);
+    priceChart.data.labels = chartLabels;
+    priceChart.data.datasets[0].data = monthlySeries.map((entry) => entry.averagePrice);
+    priceChart.data.datasets[1].data = monthlySeries.map((entry) => entry.averagePpsf);
     priceChart.update();
 
-    salesChart.data.labels = labels;
-    salesChart.data.datasets[0].data = currentData.history.map((entry) => entry.homeSales);
+    salesChart.data.labels = chartLabels;
+    salesChart.data.datasets[0].data = monthlySeries.map((entry) => entry.saleCount);
     salesChart.update();
 
-    historyTableBody.innerHTML = currentData.history
+    historyTableBody.innerHTML = monthlySeries
+      .slice()
+      .reverse()
       .map(
-        (entry) => `
+        (entry, index, reversed) => `
           <tr>
-            <td>${entry.year}</td>
-            <td>${formatCurrency(entry.averagePrice)}</td>
-            <td>${formatNumber(entry.homeSales)}</td>
+            <td>${formatMonthLabel(entry.month)}</td>
+            <td>${entry.averagePrice !== null ? formatCurrency(entry.averagePrice) : "N/A"}</td>
+            <td>${entry.averagePpsf !== null ? formatCurrency(entry.averagePpsf) : "N/A"}</td>
+            <td>${formatNumber(entry.saleCount)}</td>
+            <td>${formatPercentChange(reversed[index + 1]?.saleCount, entry.saleCount)}</td>
+            <td>${formatPercentChange(findPriorYearSales(entry.month, monthlySeries), entry.saleCount)}</td>
           </tr>
         `
       )
       .join("");
+
+    syncZipOptions();
+  }
+
+  function syncZipOptions() {
+    Array.from(zipOptionList.querySelectorAll("input")).forEach((input) => {
+      input.checked = selectedZips.has(input.value);
+    });
   }
 
   updateDashboard();
 }
 
-function createChartOptions(valueType) {
+function aggregateMonthlySeries(selectedZipList, zips, allMonths) {
+  const monthMap = new Map(
+    allMonths.map((month) => [
+      month,
+      {
+        month,
+        saleCount: 0,
+        totalPrice: 0,
+        pricedSales: 0,
+        totalPpsf: 0,
+        ppsfSales: 0,
+      },
+    ])
+  );
+
+  selectedZipList.forEach((zipCode) => {
+    (zips[zipCode]?.months || []).forEach((entry) => {
+      if (!monthMap.has(entry.month)) {
+        return;
+      }
+
+      const bucket = monthMap.get(entry.month);
+      bucket.saleCount += entry.saleCount || 0;
+
+      if (entry.averagePrice !== null && entry.saleCount) {
+        bucket.totalPrice += entry.averagePrice * entry.saleCount;
+        bucket.pricedSales += entry.saleCount;
+      }
+
+      if (entry.averagePpsf !== null && entry.saleCount) {
+        bucket.totalPpsf += entry.averagePpsf * entry.saleCount;
+        bucket.ppsfSales += entry.saleCount;
+      }
+    });
+  });
+
+  return allMonths.map((month) => {
+    const bucket = monthMap.get(month);
+
+    return {
+      month,
+      saleCount: bucket.saleCount,
+      averagePrice: bucket.pricedSales ? Math.round(bucket.totalPrice / bucket.pricedSales) : null,
+      averagePpsf: bucket.ppsfSales ? Math.round(bucket.totalPpsf / bucket.ppsfSales) : null,
+    };
+  });
+}
+
+function buildMonthRange(startMonth, endMonth) {
+  const [startYear, startMonthNumber] = startMonth.split("-").map(Number);
+  const [endYear, endMonthNumber] = endMonth.split("-").map(Number);
+  const months = [];
+  let year = startYear;
+  let month = startMonthNumber;
+
+  while (year < endYear || (year === endYear && month <= endMonthNumber)) {
+    months.push(`${year}-${String(month).padStart(2, "0")}`);
+    month += 1;
+
+    if (month === 13) {
+      year += 1;
+      month = 1;
+    }
+  }
+
+  return months;
+}
+
+function getLatestIncludedMonth(currentDate) {
+  const latest = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+  const monthOffset = currentDate.getDate() > 8 ? -1 : -2;
+
+  latest.setMonth(latest.getMonth() + monthOffset);
+
+  return `${latest.getFullYear()}-${String(latest.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function getLatestAvailableMonth(zips) {
+  return Object.values(zips).reduce((latest, zipData) => {
+    const zipLatest = zipData.months[zipData.months.length - 1]?.month;
+
+    if (!zipLatest) {
+      return latest;
+    }
+
+    return compareMonthKeys(zipLatest, latest) > 0 ? zipLatest : latest;
+  }, "1900-01");
+}
+
+function compareMonthKeys(a, b) {
+  return a.localeCompare(b);
+}
+
+function buildZipSummary(selectedZipList) {
+  if (selectedZipList.length === 1) {
+    return selectedZipList[0];
+  }
+
+  if (selectedZipList.length <= 3) {
+    return selectedZipList.join(", ");
+  }
+
+  return `${selectedZipList.length} ZIP codes selected`;
+}
+
+function createPriceChartOptions() {
   return {
     responsive: true,
     maintainAspectRatio: false,
+    interaction: {
+      mode: "index",
+      intersect: false,
+    },
     plugins: {
       legend: {
-        display: false,
+        position: "bottom",
       },
       tooltip: {
-        displayColors: false,
         callbacks: {
+          title(items) {
+            return formatMonthLabel(items[0].label);
+          },
           label(context) {
-            return valueType === "Currency"
-              ? formatCurrency(context.raw)
-              : `${formatNumber(context.raw)} sales`;
+            return `${context.dataset.label}: ${formatCurrency(context.raw)}`;
           },
         },
       },
     },
     scales: {
-      x: {
-        grid: {
-          display: false,
-        },
-        ticks: {
-          color: "#5f6175",
-        },
-      },
+      x: createMonthAxis(),
       y: {
-        beginAtZero: false,
         ticks: {
           color: "#5f6175",
           callback(value) {
-            return valueType === "Currency"
-              ? formatCompactCurrency(value)
-              : formatNumber(value);
+            return formatCompactCurrency(value);
+          },
+        },
+        grid: {
+          color: "rgba(29, 33, 68, 0.08)",
+        },
+      },
+      y1: {
+        position: "right",
+        ticks: {
+          color: "#5f6175",
+          callback(value) {
+            return formatCurrency(value);
+          },
+        },
+        grid: {
+          drawOnChartArea: false,
+        },
+      },
+    },
+  };
+}
+
+function createSalesChartOptions() {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: "index",
+      intersect: false,
+    },
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          title(items) {
+            return formatMonthLabel(items[0].label);
+          },
+          label(context) {
+            return `Sales: ${formatNumber(context.raw)}`;
+          },
+        },
+      },
+    },
+    scales: {
+      x: createMonthAxis(),
+      y: {
+        beginAtZero: true,
+        ticks: {
+          color: "#5f6175",
+          callback(value) {
+            return formatNumber(value);
           },
         },
         grid: {
@@ -322,6 +436,65 @@ function createChartOptions(valueType) {
       },
     },
   };
+}
+
+function createMonthAxis() {
+  return {
+    ticks: {
+      color: "#5f6175",
+      maxRotation: 0,
+      autoSkip: false,
+      callback(value, index, ticks) {
+        const label = this.getLabelForValue(value);
+
+        if (index === 0 || index === ticks.length - 1 || label.endsWith("-01")) {
+          return formatShortMonthLabel(label);
+        }
+
+        return "";
+      },
+    },
+    grid: {
+      display: false,
+    },
+  };
+}
+
+function findPriorYearSales(month, monthlySeries) {
+  const date = parseMonthKey(month);
+  const prior = new Date(date.getFullYear() - 1, date.getMonth(), 1);
+  const priorKey = `${prior.getFullYear()}-${String(prior.getMonth() + 1).padStart(2, "0")}`;
+  const match = monthlySeries.find((entry) => entry.month === priorKey);
+
+  return match ? match.saleCount : null;
+}
+
+function buildMetricChangeLabel(currentValue, previousValue, suffix) {
+  if (currentValue === null) {
+    return "Not enough data";
+  }
+
+  return `${formatPercentChange(previousValue, currentValue)} ${suffix}`;
+}
+
+function parseMonthKey(monthKey) {
+  const [year, month] = monthKey.split("-").map(Number);
+
+  return new Date(year, month - 1, 1);
+}
+
+function formatMonthLabel(monthKey) {
+  return parseMonthKey(monthKey).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function formatShortMonthLabel(monthKey) {
+  return parseMonthKey(monthKey).toLocaleDateString("en-US", {
+    month: "short",
+    year: "2-digit",
+  });
 }
 
 function formatCurrency(value) {
@@ -345,8 +518,12 @@ function formatNumber(value) {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
-function formatPercentChange(start, end) {
-  const change = ((end - start) / start) * 100;
+function formatPercentChange(previousValue, currentValue) {
+  if (previousValue === null || previousValue === undefined || previousValue === 0) {
+    return "N/A";
+  }
+
+  const change = ((currentValue - previousValue) / previousValue) * 100;
   const rounded = Math.round(change);
 
   return `${rounded > 0 ? "+" : ""}${rounded}%`;

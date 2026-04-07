@@ -6,7 +6,7 @@
     <title>palmharborai.com | Pinellas Housing Trends</title>
     <meta
       name="description"
-      content="Explore Pinellas County housing trends by ZIP code, including average home price and annual home sales history from 2015 onward."
+      content="Explore Pinellas County housing trends by ZIP code, including monthly price, price-per-square-foot, and home sales history from 2015 onward."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -37,9 +37,8 @@
           <p class="eyebrow">Pinellas County</p>
           <h1>Track housing trends by ZIP code on one screen.</h1>
           <p class="subpage-text">
-            Toggle through Pinellas County ZIP codes to view annual history for average home price
-            and home sales from 2015 onward. This version now uses the Pinellas sales export you
-            added, summarized into ZIP-level annual trends for qualified sales records.
+            Select one ZIP code or combine several at once to track monthly price, price per
+            square foot, and home sales trends across Pinellas County from 2015 onward.
           </p>
           <a class="back-link" href="/local-help">← Back to Local Help</a>
         </section>
@@ -50,37 +49,74 @@
               <p class="eyebrow housing-eyebrow">Interactive Dashboard</p>
               <h2>Pinellas Housing Trends</h2>
               <p class="tool-text">
-                Choose a ZIP code to update the charts, summary cards, and annual history table.
+                Use the ZIP selector to compare one market or combine multiple ZIP codes in a
+                single monthly view.
               </p>
             </div>
             <div class="tool-note">
               <strong>Source and filters</strong>
-              <p>Built from your advanced search CSV using 2015-2025 sales with positive prices and qualified sale codes 01 and 02.</p>
+              <p>
+                Built from your advanced search CSV using residential sale records with positive
+                prices, qualified sale codes 01 and 02, and monthly cutoff logic that waits until
+                the 8th before showing the prior month.
+              </p>
             </div>
           </div>
 
-          <div class="zip-toggle-wrap">
-            <p class="toggle-label">Select a ZIP code</p>
-            <div class="zip-toggle-group" id="zipToggleGroup" role="tablist" aria-label="Pinellas ZIP codes"></div>
+          <div class="tool-controls">
+            <div class="zip-select-wrap">
+              <p class="toggle-label">Select ZIP codes</p>
+              <div class="zip-select">
+                <button
+                  class="zip-select-button"
+                  id="zipSelectButton"
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="zipSelectPanel"
+                >
+                  <span class="zip-select-button-text">33701</span>
+                  <span class="zip-select-button-icon">▾</span>
+                </button>
+                <div class="zip-select-panel" id="zipSelectPanel" hidden>
+                  <div class="zip-select-actions">
+                    <button class="mini-action" id="selectAllZips" type="button">All</button>
+                  </div>
+                  <div class="zip-selection-summary" id="zipSelectionSummary">33701</div>
+                  <div class="zip-option-list" id="zipOptionList"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="cutoff-note">
+              <strong id="latestMonthLabel">February 2026</strong>
+              <p id="cutoffLabel">February 2026 is the latest month shown right now.</p>
+              <p id="latestMonthRule">A month does not appear until the 8th of the following month has passed.</p>
+            </div>
           </div>
 
           <div class="housing-stat-grid">
             <article class="housing-stat-card">
-              <span class="housing-stat-label">Selected ZIP</span>
-              <strong id="selectedZipLabel">33701</strong>
-              <p id="selectedZipArea">Downtown St. Petersburg</p>
+              <span class="housing-stat-label">Selected Market</span>
+              <strong id="selectedMarketLabel">33701</strong>
+              <p id="selectedMarketAreas">St Petersburg</p>
             </article>
 
             <article class="housing-stat-card">
-              <span class="housing-stat-label">Average Home Price</span>
+              <span class="housing-stat-label">Average Sale Price</span>
               <strong id="latestAveragePrice">$0</strong>
-              <p id="priceGrowthLabel">Since 2015: 0%</p>
+              <p id="priceChangeLabel">N/A vs prior month</p>
             </article>
 
             <article class="housing-stat-card">
-              <span class="housing-stat-label">Annual Home Sales</span>
+              <span class="housing-stat-label">Average Price per Sq. Ft.</span>
+              <strong id="latestAveragePpsf">$0</strong>
+              <p id="ppsfChangeLabel">N/A vs prior month</p>
+            </article>
+
+            <article class="housing-stat-card">
+              <span class="housing-stat-label">Home Sales</span>
               <strong id="latestSalesCount">0</strong>
-              <p id="salesChangeLabel">Since 2015: 0%</p>
+              <p id="salesChangeLabel">MoM: N/A | Same month prior year: N/A</p>
             </article>
           </div>
 
@@ -88,15 +124,15 @@
             <article class="chart-panel">
               <div class="chart-copy">
                 <span class="chart-kicker">Price history</span>
-                <h3>Average home price by year</h3>
+                <h3>Average sale price and price per square foot by month</h3>
               </div>
-              <canvas id="priceHistoryChart" aria-label="Average home price chart" role="img"></canvas>
+              <canvas id="priceHistoryChart" aria-label="Price chart" role="img"></canvas>
             </article>
 
             <article class="chart-panel">
               <div class="chart-copy">
                 <span class="chart-kicker">Sales history</span>
-                <h3>Home sales by year</h3>
+                <h3>Home sales by month</h3>
               </div>
               <canvas id="salesHistoryChart" aria-label="Home sales chart" role="img"></canvas>
             </article>
@@ -104,16 +140,19 @@
 
           <article class="history-panel">
             <div class="chart-copy">
-              <span class="chart-kicker">Annual history</span>
-              <h3>ZIP code timeline</h3>
+              <span class="chart-kicker">Monthly history</span>
+              <h3>Selected market timeline</h3>
             </div>
             <div class="table-wrap">
               <table class="history-table">
                 <thead>
                   <tr>
-                    <th>Year</th>
-                    <th>Average Home Price</th>
-                    <th>Home Sales</th>
+                    <th>Month</th>
+                    <th>Avg Sale Price</th>
+                    <th>Avg $ / Sq. Ft.</th>
+                    <th>Sales</th>
+                    <th>MoM Sales</th>
+                    <th>Same Month Prior Year</th>
                   </tr>
                 </thead>
                 <tbody id="historyTableBody"></tbody>
