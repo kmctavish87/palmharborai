@@ -3,173 +3,313 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>palmharborai.com | AI Made Practical</title>
+    <title>palmharborai.com | AI Consulting for Revenue Growth</title>
     <meta
       name="description"
-      content="palmharborai.com helps beginners and small businesses understand AI, discover useful tools, and explore practical project ideas."
+      content="AI consulting for marketing, marketing automation consulting, demand generation consulting, revenue operations consulting, and AI workflow automation for mid-market B2B teams."
+    />
+    <meta
+      name="keywords"
+      content="AI consulting for marketing, marketing automation consulting, demand generation consulting, revenue operations consulting, AI workflow automation"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body class="homepage">
-    <div class="site-shell">
-      <header class="topbar">
+  <body>
+    <header class="site-header">
+      <div class="container nav-shell">
         <a class="brand" href="/">palmharborai.com</a>
-        <nav class="nav" aria-label="Primary navigation">
-          <a href="/pinellas-housing-trends">Pinellas Housing Trends</a>
-          <a href="/models">Models</a>
-          <a href="/local-help">Local Help</a>
-          <a href="/automations">Automations</a>
-          <a href="/reports">Reports</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteNav">
+          <span></span><span></span>
+        </button>
+        <nav class="site-nav" id="siteNav" aria-label="Primary navigation">
+          <a class="active" href="/">Home</a>
+          <a href="/services">Services</a>
+          <a href="/solutions">Use Cases</a>
+          <a href="/about">About</a>
+          <a href="/insights">Insights</a>
+          <a href="/contact">Contact</a>
+          <a class="button button-primary nav-cta" href="/contact">Book a Strategy Call</a>
         </nav>
-      </header>
+      </div>
+    </header>
 
-      <main id="top">
-        <section class="hero">
-          <div class="hero-copy">
-            <p class="eyebrow">AI for beginners and small businesses</p>
-            <h1>Welcome to palmharborai.com</h1>
-            <p class="hero-text">
-              Learn AI without the jargon. palmharborai.com breaks down important concepts, recommends
-              useful tools, and shows practical examples that small businesses can actually use.
+    <main>
+      <section class="hero section">
+        <div class="container hero-grid">
+          <div class="hero-copy" data-reveal="up">
+            <p class="eyebrow">AI Consulting for Mid-Market B2B Teams</p>
+            <h1>Turn AI Into Pipeline, Not Just Experiments</h1>
+            <p class="hero-subhead">
+              I help B2B teams operationalize AI, automate workflows, and drive measurable revenue
+              impact.
             </p>
-            <div class="hero-actions">
-              <a class="button button-primary" href="/models">Explore Models</a>
-              <a class="button button-secondary" href="/automations">View Automations</a>
+            <div class="button-row">
+              <a class="button button-primary" href="/contact">Book a Strategy Call</a>
+              <a class="button button-secondary" href="#how-it-works">See How It Works</a>
             </div>
-            <ul class="hero-points" aria-label="Key benefits">
-              <li>Simple explanations for non-technical readers</li>
-              <li>Curated AI tools worth trying</li>
-              <li>Real business use cases with clear outcomes</li>
-            </ul>
-          </div>
-
-          <div class="hero-visual" aria-hidden="true">
-            <div class="glass-card glass-card-large">
-              <span class="stat-label">Starter Path</span>
-              <strong>Learn AI in practical steps</strong>
-              <p>Topics, tools, and examples designed for people who want useful results fast.</p>
-            </div>
-            <div class="glass-card glass-card-small card-a">
-              <span class="mini-tag">Topics</span>
-              <strong>Prompting</strong>
-            </div>
-            <div class="glass-card glass-card-small card-b">
-              <span class="mini-tag">Tools</span>
-              <strong>Automate tasks</strong>
-            </div>
-            <div class="glass-card glass-card-small card-c">
-              <span class="mini-tag">Projects</span>
-              <strong>Support bots</strong>
+            <div class="hero-metrics">
+              <article>
+                <strong>$17M+</strong>
+                <span>Pipeline influenced</span>
+              </article>
+              <article>
+                <strong>30%</strong>
+                <span>Cost reduction examples</span>
+              </article>
+              <article>
+                <strong>6-12 weeks</strong>
+                <span>To production-grade workflows</span>
+              </article>
             </div>
           </div>
-        </section>
 
-        <section class="features section" id="features">
-          <div class="section-heading">
-            <p class="eyebrow">What you’ll find</p>
-            <h2>AI content built for clarity and action</h2>
-            <p>
-              Everything on palmharborai.com is organized to help beginners understand what AI is,
-              which tools matter, and how to apply it inside a real business.
-            </p>
+          <div class="hero-panel" data-reveal="left">
+            <div class="hero-card">
+              <span class="panel-label">Executive Focus</span>
+              <h2>Strategy, systems, and execution built around revenue outcomes.</h2>
+              <ul class="bullet-list">
+                <li>AI strategy tied to pipeline and efficiency goals</li>
+                <li>Automation layered into existing CRM and marketing systems</li>
+                <li>Measurement frameworks that prove ROI beyond pilots</li>
+              </ul>
+            </div>
           </div>
+        </div>
+      </section>
 
-          <div class="feature-grid">
-            <article class="feature-card">
-              <div class="icon-badge badge-orange">01</div>
-              <h3>Beginner AI Topics</h3>
-              <p>
-                Clear guides on prompts, chatbots, automation, and common AI terms without
-                technical overload.
-              </p>
-            </article>
-
-            <article class="feature-card">
-              <div class="icon-badge badge-pink">02</div>
-              <h3>Recommendations</h3>
-              <p>
-                Straightforward suggestions for AI tools that help with writing, workflows,
-                research, and customer communication.
-              </p>
-            </article>
-
-            <article class="feature-card">
-              <div class="icon-badge badge-blue">03</div>
-              <h3>Project Examples</h3>
-              <p>
-                Practical examples showing how small businesses can use AI to save time, improve
-                consistency, and serve customers better.
-              </p>
-            </article>
+      <section class="section section-tight">
+        <div class="container">
+          <div class="trust-bar" data-reveal="up">
+            <p class="section-kicker">Trusted by modern B2B teams</p>
+            <div class="logo-row" aria-label="Placeholder client logos">
+              <span>Enterprise SaaS</span>
+              <span>Revenue Platform</span>
+              <span>Global Consulting</span>
+              <span>Cloud Infrastructure</span>
+              <span>Healthcare Tech</span>
+            </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section class="projects section" id="projects">
-          <div class="section-heading">
-            <p class="eyebrow">Example projects</p>
-            <h2>Practical AI ideas for everyday business work</h2>
-            <p>
-              These are the kinds of projects palmharborai.com highlights: simple, useful, and
-              realistic for small teams.
-            </p>
+      <section class="section">
+        <div class="container">
+          <div class="section-heading" data-reveal="up">
+            <p class="eyebrow">The Challenge</p>
+            <h2>Most Teams Are Stuck in AI Experimentation</h2>
           </div>
-
-          <div class="project-grid">
-            <article class="project-card project-marketing">
-              <span class="project-label">Marketing</span>
-              <h3>Content generation</h3>
-              <p>
-                Draft blog posts, ad copy, social captions, and email campaigns faster while
-                keeping your brand voice consistent.
-              </p>
+          <div class="grid-4">
+            <article class="feature-card" data-reveal="up">
+              <h3>Disconnected tools and data</h3>
+              <p>Point solutions create friction instead of scalable operating leverage.</p>
             </article>
-
-            <article class="project-card project-operations">
-              <span class="project-label">Operations</span>
-              <h3>Workflow automation</h3>
-              <p>
-                Use AI to summarize documents, route requests, organize data, and automate repeated
-                admin tasks.
-              </p>
+            <article class="feature-card" data-reveal="up">
+              <h3>No clear ROI from AI</h3>
+              <p>Pilots sound promising but rarely translate into measurable pipeline impact.</p>
             </article>
-
-            <article class="project-card project-support">
-              <span class="project-label">Customer Support</span>
-              <h3>AI assistants</h3>
-              <p>
-                Answer common questions, guide visitors, and improve response speed with a helpful
-                support assistant.
-              </p>
+            <article class="feature-card" data-reveal="up">
+              <h3>Manual workflows slowing growth</h3>
+              <p>Teams waste time on repetitive handoffs, admin, and campaign coordination.</p>
+            </article>
+            <article class="feature-card" data-reveal="up">
+              <h3>Lack of alignment between marketing and sales</h3>
+              <p>Systems break down when revenue teams do not share process, data, and accountability.</p>
             </article>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section class="cta section" id="cta">
-          <div class="cta-panel">
+      <section class="section section-surface">
+        <div class="container">
+          <div class="section-heading" data-reveal="up">
+            <p class="eyebrow">The Approach</p>
+            <h2>From AI Ideas to Revenue Systems</h2>
+          </div>
+          <div class="pillars">
+            <article class="pillar-card" data-reveal="up">
+              <span class="number-pill">01</span>
+              <h3>AI Strategy &amp; Use Case Design</h3>
+              <p>Prioritize initiatives based on business value, feasibility, and speed to impact.</p>
+            </article>
+            <article class="pillar-card" data-reveal="up">
+              <span class="number-pill">02</span>
+              <h3>Automation &amp; Workflow Implementation</h3>
+              <p>Build cross-platform systems that reduce manual work and accelerate execution.</p>
+            </article>
+            <article class="pillar-card" data-reveal="up">
+              <span class="number-pill">03</span>
+              <h3>Revenue &amp; Demand Generation Optimization</h3>
+              <p>Connect AI and automation to pipeline creation, conversion, and operating efficiency.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="section-heading" data-reveal="up">
+            <p class="eyebrow">Use Case Preview</p>
+            <h2>High-Impact Systems I Build</h2>
+          </div>
+          <div class="grid-2">
+            <article class="solution-card" data-reveal="up">
+              <h3>AI-powered lead routing</h3>
+              <p>Score, classify, and route inbound demand faster so sales engages the right accounts first.</p>
+            </article>
+            <article class="solution-card" data-reveal="up">
+              <h3>Intent-based ABM workflows</h3>
+              <p>Activate target accounts with signal-driven plays across sales and marketing channels.</p>
+            </article>
+            <article class="solution-card" data-reveal="up">
+              <h3>Marketing automation optimization</h3>
+              <p>Improve nurture logic, lifecycle transitions, and campaign orchestration for better conversion.</p>
+            </article>
+            <article class="solution-card" data-reveal="up">
+              <h3>CRM workflow automation</h3>
+              <p>Automate workflows inside Salesforce or D365 to reduce friction and improve visibility.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-surface">
+        <div class="container">
+          <div class="section-heading" data-reveal="up">
+            <p class="eyebrow">Case Studies</p>
+            <h2>Representative Outcomes</h2>
+          </div>
+          <div class="case-grid">
+            <article class="case-card" data-reveal="up">
+              <span class="case-tag">Demand Generation</span>
+              <h3>Intent-based orchestration for a B2B SaaS team</h3>
+              <p>
+                Rebuilt activation workflows around account signals and improved campaign response
+                speed across marketing and sales.
+              </p>
+              <strong>Outcome: 22% lift in qualified pipeline creation</strong>
+            </article>
+            <article class="case-card" data-reveal="up">
+              <span class="case-tag">Marketing Automation</span>
+              <h3>Lifecycle cleanup and nurture redesign</h3>
+              <p>
+                Simplified automation architecture, removed workflow duplication, and improved handoff logic.
+              </p>
+              <strong>Outcome: 30% reduction in operational waste</strong>
+            </article>
+            <article class="case-card" data-reveal="up">
+              <span class="case-tag">Revenue Operations</span>
+              <h3>CRM process redesign for cross-functional visibility</h3>
+              <p>
+                Standardized routing, measurement, and reporting across fragmented GTM systems.
+              </p>
+              <strong>Outcome: Faster response times and cleaner pipeline attribution</strong>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="how-it-works">
+        <div class="container">
+          <div class="section-heading" data-reveal="up">
+            <p class="eyebrow">How I Work</p>
+            <h2>A focused consulting process built for execution</h2>
+          </div>
+          <div class="process-grid">
+            <article class="process-card" data-reveal="up">
+              <span>1</span>
+              <h3>Diagnose</h3>
+              <p>Assess current systems, bottlenecks, data flows, and revenue priorities.</p>
+            </article>
+            <article class="process-card" data-reveal="up">
+              <span>2</span>
+              <h3>Design</h3>
+              <p>Prioritize use cases, define workflows, and align teams around business outcomes.</p>
+            </article>
+            <article class="process-card" data-reveal="up">
+              <span>3</span>
+              <h3>Build</h3>
+              <p>Implement automations, reporting, and AI-supported operating systems.</p>
+            </article>
+            <article class="process-card" data-reveal="up">
+              <span>4</span>
+              <h3>Optimize</h3>
+              <p>Refine performance, improve adoption, and tie delivery back to measurable ROI.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="section-heading" data-reveal="up">
+            <p class="eyebrow">Testimonials</p>
+            <h2>What clients would say</h2>
+          </div>
+          <div class="grid-3">
+            <article class="testimonial-card" data-reveal="up">
+              <p>
+                “He brought strategic clarity to our AI roadmap and made sure execution stayed tied
+                to revenue impact, not innovation theater.”
+              </p>
+              <strong>VP Marketing, Enterprise SaaS</strong>
+            </article>
+            <article class="testimonial-card" data-reveal="up">
+              <p>
+                “The combination of GTM understanding and technical workflow design was exactly what
+                our team needed.”
+              </p>
+              <strong>Chief Revenue Officer, B2B Technology</strong>
+            </article>
+            <article class="testimonial-card" data-reveal="up">
+              <p>
+                “We stopped talking about AI in abstract terms and started operationalizing it in a
+                way leadership could measure.”
+              </p>
+              <strong>CIO, Mid-Market Services Company</strong>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="cta-panel" data-reveal="up">
             <div>
-              <p class="eyebrow">Start here</p>
-              <h2>Make AI feel useful, not overwhelming</h2>
+              <p class="eyebrow">Next Step</p>
+              <h2>Let’s Build Your AI Growth Engine</h2>
               <p>
-                palmharborai.com is designed to turn AI into something approachable for founders,
-                operators, and curious beginners.
+                If your team needs AI consulting, workflow automation, or demand generation systems
+                that produce measurable business outcomes, let’s talk.
               </p>
             </div>
-            <a class="button button-primary" href="/reports">View Reports</a>
+            <a class="button button-primary" href="/contact">Book a Strategy Call</a>
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
+    </main>
 
-      <footer class="footer">
-        <p>© <span id="year"></span> palmharborai.com</p>
-        <p>AI topics, recommendations, and practical examples for small businesses.</p>
-      </footer>
-    </div>
+    <footer class="site-footer">
+      <div class="container footer-shell">
+        <div>
+          <a class="brand footer-brand" href="/">palmharborai.com</a>
+          <p>Executive AI and automation consulting for B2B growth teams.</p>
+        </div>
+        <div class="footer-links">
+          <a href="/services">Services</a>
+          <a href="/solutions">Use Cases</a>
+          <a href="/about">About</a>
+          <a href="/insights">Insights</a>
+          <a href="/contact">Contact</a>
+        </div>
+        <p class="footer-copy">© <span id="year"></span> palmharborai.com</p>
+      </div>
+    </footer>
 
     <script src="./script.js"></script>
   </body>
