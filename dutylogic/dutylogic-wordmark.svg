@@ -1,0 +1,21 @@
+<svg width="640" height="160" viewBox="0 0 640 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="16" width="128" height="128" rx="30" fill="url(#bg)"/>
+  <path d="M49 49C42.3726 49 37 54.3726 37 61V101C37 107.627 42.3726 113 49 113H68C83.6631 113 96.3636 100.299 96.3636 84.6364V73.7273C96.3636 58.0641 109.064 45.3636 124.727 45.3636" stroke="#0F172A" stroke-width="8.72727" stroke-linecap="round"/>
+  <path d="M61 61H74.0909C80.7183 61 86.0909 66.3726 86.0909 73V84.6364C86.0909 91.2637 80.7183 96.6364 74.0909 96.6364H61" stroke="#2563EB" stroke-width="8.72727" stroke-linecap="round"/>
+  <path d="M110.909 45.3636V113" stroke="#0F172A" stroke-width="8.72727" stroke-linecap="round"/>
+  <path d="M110.909 113H128.364" stroke="#14B8A6" stroke-width="8.72727" stroke-linecap="round"/>
+  <circle cx="37.3636" cy="61" r="9.81818" fill="#0F172A"/>
+  <circle cx="37.3636" cy="101" r="9.81818" fill="#0F172A"/>
+  <circle cx="96.3636" cy="84.6364" r="9.81818" fill="#2563EB"/>
+  <circle cx="124.727" cy="45.3636" r="9.81818" fill="#14B8A6"/>
+  <circle cx="110.909" cy="113" r="9.81818" fill="#0F172A"/>
+  <text x="168" y="82" fill="#0F172A" font-family="Inter, Arial, sans-serif" font-size="52" font-weight="800" letter-spacing="-1.2">DutyLogic</text>
+  <text x="170" y="118" fill="#64748B" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500">Guided tariff classification logic.</text>
+  <defs>
+    <linearGradient id="bg" x1="19" y1="22" x2="129" y2="138" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EFF6FF"/>
+      <stop offset="0.54" stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#ECFEFF"/>
+    </linearGradient>
+  </defs>
+</svg>

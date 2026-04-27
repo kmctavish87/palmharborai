@@ -7,9 +7,17 @@
     <title>DutyLogic</title>
     <link rel="icon" type="image/svg+xml" href="./dutylogic-logo.svg" />
     <style>
+      :root {
+        color-scheme: light;
+      }
+
       body {
         margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(191, 219, 254, 0.8), transparent 25%),
+          radial-gradient(circle at top right, rgba(20, 184, 166, 0.12), transparent 28%),
+          linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
       }
 
       .boot-shell {
@@ -21,17 +29,52 @@
       }
 
       .boot-card {
-        max-width: 720px;
+        max-width: 640px;
         width: 100%;
-        padding: 20px;
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.85);
-        box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+        padding: 28px;
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.86);
+        border: 1px solid rgba(226, 232, 240, 0.95);
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+        text-align: center;
+        backdrop-filter: blur(16px);
+      }
+
+      .boot-wordmark {
+        width: min(360px, 100%);
+        height: auto;
+        display: block;
+        margin: 0 auto 18px;
+      }
+
+      .boot-node-loader {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin: 8px 0 18px;
+      }
+
+      .boot-node-loader span {
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        background: #2563eb;
+        animation: pulse 1.25s ease-in-out infinite;
+      }
+
+      .boot-node-loader span:nth-child(2) {
+        background: #14b8a6;
+        animation-delay: 0.18s;
+      }
+
+      .boot-node-loader span:nth-child(3) {
+        background: #0f172a;
+        animation-delay: 0.36s;
       }
 
       .boot-card h1 {
         margin: 0 0 8px;
-        font-size: 1.2rem;
+        font-size: 1.5rem;
       }
 
       .boot-card p,
@@ -41,9 +84,60 @@
         overflow-wrap: anywhere;
       }
 
+      .boot-subhead {
+        margin-top: 10px !important;
+        color: #475569;
+      }
+
+      .boot-meta {
+        margin-top: 16px !important;
+        color: #64748b;
+        font-size: 0.95rem;
+      }
+
       .boot-card pre {
         margin-top: 12px;
         color: #991b1b;
+        text-align: left;
+        padding: 14px;
+        border-radius: 16px;
+        background: rgba(254, 242, 242, 0.85);
+      }
+
+      .boot-actions {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .boot-button {
+        border: 0;
+        border-radius: 999px;
+        padding: 12px 18px;
+        background: #0f172a;
+        color: #fff;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .boot-button.secondary {
+        background: #fff;
+        color: #0f172a;
+        border: 1px solid #cbd5e1;
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          transform: scale(0.88);
+          opacity: 0.55;
+        }
+
+        50% {
+          transform: scale(1.1);
+          opacity: 1;
+        }
       }
     </style>
     <script>
@@ -51,11 +145,11 @@
         var root = document.getElementById("root");
         if (!root) return;
         root.innerHTML =
-          '<div class="boot-shell"><div class="boot-card"><h1>' +
+          '<div class="boot-shell"><div class="boot-card"><img class="boot-wordmark" src="./dutylogic-wordmark.svg" alt="DutyLogic" /><h1>' +
           title +
           '</h1><pre>' +
           String(details || "Unknown error") +
-          "</pre></div></div>";
+          '</pre><div class="boot-actions"><button class="boot-button" onclick="window.location.reload()">Reload page</button></div></div></div>';
       }
 
       window.addEventListener("error", function (event) {
@@ -69,16 +163,46 @@
           reason?.stack || reason?.message || String(reason),
         );
       });
+
+      window.__dutyLogicMounted = false;
+      window.setTimeout(function () {
+        if (window.__dutyLogicMounted) return;
+        var status = document.getElementById("bootStatus");
+        if (status) {
+          status.textContent = "Still loading the tariff dataset and preparing search logic...";
+        }
+      }, 8000);
+
+      window.setTimeout(function () {
+        if (window.__dutyLogicMounted) return;
+        var actions = document.getElementById("bootActions");
+        var note = document.getElementById("bootMeta");
+        if (note) {
+          note.textContent =
+            "DutyLogic is still preparing a large HTS dataset. If this takes too long, reload the page or try again on a faster connection.";
+        }
+        if (actions && !actions.hasChildNodes()) {
+          actions.innerHTML =
+            '<button class="boot-button" onclick="window.location.reload()">Reload page</button>' +
+            '<button class="boot-button secondary" onclick="window.location.href=\'/\'">Back to site</button>';
+        }
+      }, 18000);
     </script>
-    <script type="module" crossorigin src="./assets/index-4Nr_St2-.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CKcNUOrH.css">
+    <script type="module" crossorigin src="./assets/index-CFvaLi6s.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-C-ujNHh8.css">
   </head>
   <body>
     <div id="root">
       <div class="boot-shell">
         <div class="boot-card">
-          <h1>Loading DutyLogic...</h1>
-          <p>The page is starting up. If something fails, the error will appear here.</p>
+          <img class="boot-wordmark" src="./dutylogic-wordmark.svg" alt="DutyLogic" />
+          <div class="boot-node-loader" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <h1>Building your classification workspace...</h1>
+          <p class="boot-subhead" id="bootStatus">Loading the HTS hierarchy, decision logic, and duty overlays.</p>
+          <p class="boot-meta" id="bootMeta">If something fails, DutyLogic will show the error details here.</p>
+          <div class="boot-actions" id="bootActions"></div>
         </div>
       </div>
     </div>
