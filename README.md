@@ -132,3 +132,4 @@ Open `index.html` directly in a browser, or serve the directory with any simple 
 - Subtle scroll-based reveal animations are included.
 - The contact page includes a form and a calendar embed placeholder ready to replace with a real booking tool.
 - The TMS hub depends on Cloudflare Functions plus D1 configuration to work in production.
+- The TMS research hub route is available at `/TMS`.
