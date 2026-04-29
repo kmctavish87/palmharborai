@@ -1,8 +1,70 @@
+import { getTmsPayload, isRefreshDue, refreshTmsData } from "../functions/_lib/tms-refresh.js";
+
 const OPENAI_URL = "https://api.openai.com/v1/responses";
 
-export async function onRequestPost(context) {
-  const { request, env } = context;
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
 
+    if (url.pathname === "/api/tms" && request.method === "GET") {
+      return handleTmsIndex(env, ctx);
+    }
+
+    if (url.pathname === "/api/tms/refresh" && request.method === "POST") {
+      return handleTmsRefresh(request, env);
+    }
+
+    if (url.pathname === "/api/tms/generate" && request.method === "POST") {
+      return handleTmsGenerate(request, env);
+    }
+
+    return env.ASSETS.fetch(request);
+  },
+};
+
+async function handleTmsIndex(env, ctx) {
+  try {
+    if (await isRefreshDue(env)) {
+      ctx.waitUntil(refreshTmsData(env));
+    }
+
+    const payload = await getTmsPayload(env);
+    return Response.json(payload, {
+      headers: { "Cache-Control": "public, max-age=300" },
+    });
+  } catch (error) {
+    return Response.json(
+      {
+        error: "Unable to load TMS hub data.",
+        detail: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
+}
+
+async function handleTmsRefresh(request, env) {
+  const headerToken = request.headers.get("x-admin-token") || "";
+
+  if (!env.TMS_ADMIN_TOKEN || headerToken !== env.TMS_ADMIN_TOKEN) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const result = await refreshTmsData(env);
+    return Response.json(result);
+  } catch (error) {
+    return Response.json(
+      {
+        error: "Refresh failed.",
+        detail: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
+}
+
+async function handleTmsGenerate(request, env) {
   if (!env.OPENAI_API_KEY) {
     return Response.json(
       { error: "OPENAI_API_KEY is not configured." },
@@ -20,7 +82,6 @@ export async function onRequestPost(context) {
     const contentType = body.contentType || "Blog post";
     const tone = body.tone || "Professional";
 
-    const prompt = buildPrompt({ items, contentType, tone });
     const response = await fetch(OPENAI_URL, {
       method: "POST",
       headers: {
@@ -29,7 +90,7 @@ export async function onRequestPost(context) {
       },
       body: JSON.stringify({
         model: "gpt-4.1-mini",
-        input: prompt,
+        input: buildPrompt({ items, contentType, tone }),
       }),
     });
 
@@ -41,8 +102,7 @@ export async function onRequestPost(context) {
       );
     }
 
-    const draft = extractText(payload);
-    return Response.json({ draft });
+    return Response.json({ draft: extractText(payload) });
   } catch (error) {
     return Response.json(
       {

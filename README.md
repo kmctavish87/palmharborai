@@ -28,8 +28,8 @@ Core service areas:
 - `contact.html` - Contact / Book a Call
 - `styles.css` - Shared design system and page styling
 - `script.js` - Mobile nav, reveal animations, and contact form placeholder behavior
-- `functions/api/tms/*` - Server-side routes for the TMS hub
 - `functions/_lib/*` - Shared TMS fetch, dedupe, and database logic
+- `worker/index.js` - Cloudflare Worker entrypoint for API routes and asset serving
 - `migrations/001_create_tms_tables.sql` - D1 schema for TMS data
 
 ## Stack
@@ -57,6 +57,7 @@ What it includes:
 - AI draft generation for selected studies and articles
 - manual protected refresh endpoint at `/api/tms/refresh`
 - scheduled refresh workflow every 15 days via GitHub Actions
+- Worker-based runtime with static assets served from the same Cloudflare deployment
 
 ### Environment Variables
 
@@ -72,10 +73,10 @@ See `.env.example`.
 
 ### Database Setup
 
-This implementation uses Cloudflare D1.
+This implementation uses Cloudflare D1 with a Cloudflare Worker static-assets deployment.
 
 1. Create a D1 database in Cloudflare.
-2. Replace `REPLACE_WITH_D1_DATABASE_ID` in `wrangler.jsonc`.
+2. Confirm the D1 database ID is set in `wrangler.jsonc`.
 3. Apply the schema in `migrations/001_create_tms_tables.sql`.
 
 If you use Wrangler locally, the usual pattern is:
@@ -119,10 +120,11 @@ Open `index.html` directly in a browser, or serve the directory with any simple 
 
 1. Push this repository to GitHub.
 2. In Cloudflare, go to `Workers & Pages`.
-3. Create or connect a Pages project.
+3. Create or connect the Worker/static-assets project.
 4. Use these deployment settings:
 
-- Build command: `none`
+- Build command: blank
+- Deploy command: `npx wrangler deploy`
 - Output directory: `/`
 
 ## Notes
@@ -131,5 +133,5 @@ Open `index.html` directly in a browser, or serve the directory with any simple 
 - The header is sticky and includes the global CTA: `Book a Strategy Call`.
 - Subtle scroll-based reveal animations are included.
 - The contact page includes a form and a calendar embed placeholder ready to replace with a real booking tool.
-- The TMS hub depends on Cloudflare Functions plus D1 configuration to work in production.
+- The TMS hub depends on a Worker entrypoint plus D1 configuration to work in production.
 - The TMS research hub route is available at `/TMS`.

@@ -1,0 +1,9 @@
+.git
+.github
+functions
+worker
+migrations
+.env.example
+wrangler.jsonc
+README.md
+.DS_Store
