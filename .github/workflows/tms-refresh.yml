@@ -1,0 +1,25 @@
+name: Refresh TMS Intelligence Hub
+
+on:
+  schedule:
+    - cron: "0 12 1,16 * *"
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger TMS refresh endpoint
+        env:
+          TMS_REFRESH_URL: https://palmharborai.com/api/tms/refresh
+          TMS_ADMIN_TOKEN: ${{ secrets.TMS_ADMIN_TOKEN }}
+        run: |
+          if [ -z "$TMS_ADMIN_TOKEN" ]; then
+            echo "TMS_ADMIN_TOKEN secret is missing."
+            exit 1
+          fi
+
+          curl --fail-with-body \
+            --request POST \
+            --header "x-admin-token: $TMS_ADMIN_TOKEN" \
+            "$TMS_REFRESH_URL"

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>palmharborai.com | TMS Research & News Intelligence Hub</title>
+    <meta
+      name="description"
+      content="Track published TMS research, medical studies, and relevant news stories related to depression, treatment-resistant depression, anxiety, OCD, PTSD, addiction, chronic pain, and related uses."
+    />
+    <meta
+      name="keywords"
+      content="TMS research, transcranial magnetic stimulation, TMS depression, TMS news, treatment-resistant depression, OCD, PTSD, anxiety, addiction, chronic pain"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="./tms.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav-shell">
+        <a class="brand" href="/">palmharborai.com</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteNav">
+          <span></span><span></span>
+        </button>
+        <nav class="site-nav" id="siteNav" aria-label="Primary navigation">
+          <a href="/">Home</a>
+          <a href="/services">Services</a>
+          <a href="/TMS" class="active">TMS</a>
+          <a href="/solutions">Use Cases</a>
+          <a href="/about">About</a>
+          <a href="/insights">Insights</a>
+          <a href="/contact">Contact</a>
+          <a class="button button-primary nav-cta" href="/contact">Book a Strategy Call</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="page-hero section tms-hero">
+        <div class="container">
+          <div class="tms-hero-shell" data-reveal="up">
+            <div class="tms-hero-copy">
+              <p class="eyebrow">TMS Intelligence</p>
+              <h1>TMS Research &amp; News Intelligence Hub</h1>
+              <p class="hero-subhead">
+                Track published TMS research and relevant online news stories across depression,
+                treatment-resistant depression, anxiety, OCD, PTSD, addiction, chronic pain, and
+                other related clinical areas.
+              </p>
+            </div>
+            <div class="tms-hero-note">
+              <span class="panel-label">Educational Use</span>
+              <p>
+                This hub is for educational research and content development only. It is not
+                medical advice, diagnosis, or treatment guidance.
+              </p>
+            </div>
+          </div>
+
+          <div class="tms-search-shell" data-reveal="up">
+            <label class="tms-search-label" for="tmsSearch">Search studies and stories</label>
+            <div class="tms-search-row">
+              <input
+                id="tmsSearch"
+                class="tms-search-input"
+                type="search"
+                placeholder="Search TMS topics, populations, journals, publishers, or keywords"
+              />
+              <button class="button button-primary" id="tmsSearchButton" type="button">
+                Search
+              </button>
+            </div>
+            <div class="tms-chip-row" aria-label="Suggested searches">
+              <button class="tms-chip" type="button" data-chip="Depression">Depression</button>
+              <button class="tms-chip" type="button" data-chip="Treatment-resistant depression">
+                Treatment-resistant depression
+              </button>
+              <button class="tms-chip" type="button" data-chip="Addiction">Addiction</button>
+              <button class="tms-chip" type="button" data-chip="Anxiety">Anxiety</button>
+              <button class="tms-chip" type="button" data-chip="OCD">OCD</button>
+              <button class="tms-chip" type="button" data-chip="PTSD">PTSD</button>
+              <button class="tms-chip" type="button" data-chip="Chronic pain">Chronic pain</button>
+              <button class="tms-chip" type="button" data-chip="Adolescents">Adolescents</button>
+              <button class="tms-chip" type="button" data-chip="Veterans">Veterans</button>
+              <button class="tms-chip" type="button" data-chip="Insurance">Insurance</button>
+              <button class="tms-chip" type="button" data-chip="FDA">FDA</button>
+              <button class="tms-chip" type="button" data-chip="Outcomes">Outcomes</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-tight">
+        <div class="container">
+          <div class="tms-toolbar" data-reveal="up">
+            <div>
+              <p class="section-kicker">Filters</p>
+              <div class="tms-filter-row" id="tmsFilterRow">
+                <button class="tms-filter-chip is-active" type="button" data-filter="All">All</button>
+                <button class="tms-filter-chip" type="button" data-filter="Depression">Depression</button>
+                <button class="tms-filter-chip" type="button" data-filter="Addiction">Addiction</button>
+                <button class="tms-filter-chip" type="button" data-filter="Anxiety">Anxiety</button>
+                <button class="tms-filter-chip" type="button" data-filter="OCD">OCD</button>
+                <button class="tms-filter-chip" type="button" data-filter="PTSD">PTSD</button>
+                <button class="tms-filter-chip" type="button" data-filter="Chronic pain">Chronic pain</button>
+                <button class="tms-filter-chip" type="button" data-filter="FDA/Regulatory">FDA/Regulatory</button>
+                <button class="tms-filter-chip" type="button" data-filter="Insurance">Insurance</button>
+                <button class="tms-filter-chip" type="button" data-filter="Patient stories">Patient stories</button>
+                <button class="tms-filter-chip" type="button" data-filter="Clinical trials">Clinical trials</button>
+              </div>
+            </div>
+            <div class="tms-meta-card">
+              <p><strong>Last updated:</strong> <span id="tmsLastUpdated">Loading...</span></p>
+              <p><strong>Selected for content generation:</strong> <span id="tmsSelectedCount">0</span></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section tms-results-section">
+        <div class="container">
+          <div class="tms-status-bar" id="tmsStatusBar" data-reveal="up">
+            Loading the latest TMS research and news sources...
+          </div>
+
+          <div class="tms-columns" data-reveal="up">
+            <section class="tms-column">
+              <div class="tms-column-header">
+                <div>
+                  <p class="eyebrow">Medical Studies</p>
+                  <h2>Studies &amp; literature</h2>
+                </div>
+                <label class="tms-sort">
+                  <span>Sort</span>
+                  <select id="studySort">
+                    <option value="newest">Newest first</option>
+                    <option value="oldest">Oldest first</option>
+                    <option value="relevant">Most relevant</option>
+                  </select>
+                </label>
+              </div>
+              <div class="tms-empty-state" id="studyEmptyState" hidden>
+                No studies match the current search or filter.
+              </div>
+              <div class="tms-card-list" id="studyList"></div>
+            </section>
+
+            <section class="tms-column">
+              <div class="tms-column-header">
+                <div>
+                  <p class="eyebrow">News &amp; Online Stories</p>
+                  <h2>News coverage &amp; stories</h2>
+                </div>
+                <label class="tms-sort">
+                  <span>Sort</span>
+                  <select id="newsSort">
+                    <option value="newest">Newest first</option>
+                    <option value="oldest">Oldest first</option>
+                    <option value="relevant">Most relevant</option>
+                  </select>
+                </label>
+              </div>
+              <div class="tms-empty-state" id="newsEmptyState" hidden>
+                No news stories match the current search or filter.
+              </div>
+              <div class="tms-card-list" id="newsList"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-surface">
+        <div class="container">
+          <div class="section-heading" data-reveal="up">
+            <p class="eyebrow">AI Content Generator</p>
+            <h2>Turn selected studies and stories into draft content</h2>
+            <p>
+              Choose supporting sources, select the output style and tone, and generate a careful
+              draft that cites the selected material.
+            </p>
+          </div>
+
+          <div class="tms-generator-grid" data-reveal="up">
+            <article class="tms-generator-panel">
+              <div class="tms-generator-controls">
+                <label>
+                  <span>Content type</span>
+                  <select id="contentType">
+                    <option value="Blog post">Blog post</option>
+                    <option value="Patient-friendly summary">Patient-friendly summary</option>
+                    <option value="Social media post">Social media post</option>
+                    <option value="Email newsletter">Email newsletter</option>
+                    <option value="FAQ">FAQ</option>
+                    <option value="Clinician-facing summary">Clinician-facing summary</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Tone</span>
+                  <select id="contentTone">
+                    <option value="Professional">Professional</option>
+                    <option value="Friendly">Friendly</option>
+                    <option value="Educational">Educational</option>
+                    <option value="Plain English">Plain English</option>
+                    <option value="More clinical">More clinical</option>
+                  </select>
+                </label>
+              </div>
+              <div class="tms-generator-actions">
+                <button class="button button-primary" id="generateDraftButton" type="button">
+                  Generate Draft
+                </button>
+                <button class="button button-secondary" id="clearSelectionsButton" type="button">
+                  Clear Selections
+                </button>
+              </div>
+              <p class="tms-generator-note">
+                The generator uses only the selected source metadata and summaries. It is designed
+                to avoid overstating findings and should always be reviewed by a qualified human
+                editor.
+              </p>
+            </article>
+
+            <article class="tms-generator-panel">
+              <div class="tms-draft-header">
+                <h3>Generated draft</h3>
+                <div class="tms-draft-actions">
+                  <button class="button button-secondary" id="copyDraftButton" type="button">
+                    Copy
+                  </button>
+                  <button class="button button-secondary" id="downloadDraftButton" type="button">
+                    Download
+                  </button>
+                </div>
+              </div>
+              <textarea
+                id="generatedDraft"
+                class="tms-draft-output"
+                placeholder="Generated content will appear here."
+              ></textarea>
+              <p class="tms-disclaimer">
+                This content is for educational purposes only and is not medical advice. Patients
+                should consult a qualified medical provider.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="cta-panel" data-reveal="up">
+            <div>
+              <p class="eyebrow">Disclaimer</p>
+              <h2>This hub is an educational research and news tool.</h2>
+              <p>
+                It does not provide medical advice, diagnosis, or treatment recommendations. Any
+                clinical decisions should be made with a qualified medical professional.
+              </p>
+            </div>
+            <a class="button button-primary" href="/contact">Book a Strategy Call</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-shell">
+        <div>
+          <a class="brand footer-brand" href="/">palmharborai.com</a>
+          <p>Executive AI and automation consulting for B2B growth teams.</p>
+        </div>
+        <div class="footer-links">
+          <a href="/services">Services</a>
+          <a href="/TMS">TMS</a>
+          <a href="/solutions">Use Cases</a>
+          <a href="/about">About</a>
+          <a href="/insights">Insights</a>
+          <a href="/contact">Contact</a>
+        </div>
+        <p class="footer-copy">© <span id="year"></span> palmharborai.com</p>
+      </div>
+    </footer>
+
+    <script src="../script.js"></script>
+    <script src="./tms.js"></script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "palmharborai",
+  "compatibility_date": "2026-04-29",
+  "pages_build_output_dir": ".",
+  "d1_databases": [
+    {
+      "binding": "TMS_DB",
+      "database_name": "palmharborai-tms",
+      "database_id": "7d154c0f-3e6d-46cc-baca-3dd75f727000"
+    }
+  ]
+}
