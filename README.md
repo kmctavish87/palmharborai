@@ -44,9 +44,10 @@ This makes the site easy to deploy on static hosting and straightforward to port
 
 ## TMS Research & News Intelligence Hub
 
-Route:
+Routes:
 
-- `/TMS`
+- `https://tms.palmharborai.com`
+- fallback path: `/TMS`
 
 What it includes:
 
@@ -57,7 +58,7 @@ What it includes:
 - AI draft generation for selected studies and articles
 - manual protected refresh endpoint at `/api/tms/refresh`
 - scheduled refresh workflow every 15 days via GitHub Actions
-- Worker-based runtime with static assets served from the same Cloudflare deployment
+- Pages Functions / Worker-style runtime for `/api/tms`, `/api/tms/refresh`, and `/api/tms/generate`
 
 ### Environment Variables
 
@@ -70,6 +71,16 @@ Create environment variables locally and in Cloudflare:
 - `TMS_ADMIN_TOKEN`
 
 See `.env.example`.
+
+### Pages Project Bindings
+
+For the Pages deployment to power the TMS API routes, configure these in the `palmharborai` Pages project:
+
+- `TMS_DB` D1 binding
+- `OPENAI_API_KEY`
+- `NEWS_API_KEY`
+- `NCBI_API_KEY`
+- `TMS_ADMIN_TOKEN`
 
 ### Database Setup
 

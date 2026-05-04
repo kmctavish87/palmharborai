@@ -1,3 +1,5 @@
+redirectTmsSubdomainRoot();
+
 document.addEventListener("DOMContentLoaded", () => {
   const year = document.getElementById("year");
   if (year) {
@@ -8,6 +10,19 @@ document.addEventListener("DOMContentLoaded", () => {
   initRevealAnimations();
   initContactForm();
 });
+
+function redirectTmsSubdomainRoot() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const isTmsHost = window.location.hostname === "tms.palmharborai.com";
+  const isRootPath = window.location.pathname === "/" || window.location.pathname === "";
+
+  if (isTmsHost && isRootPath) {
+    window.location.replace("https://tms.palmharborai.com/TMS/");
+  }
+}
 
 function initMobileNav() {
   const toggle = document.querySelector(".nav-toggle");
