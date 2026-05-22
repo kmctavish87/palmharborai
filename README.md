@@ -22,6 +22,7 @@ Core service areas:
 - `index.html` - Homepage
 - `services.html` - Services
 - `TMS/index.html` - TMS Research & News Intelligence Hub
+- `census/index.html` - Interactive U.S. Census county heat map
 - `solutions.html` - Use Cases / Solutions
 - `about.html` - About
 - `insights.html` - Insights / Blog
@@ -146,3 +147,4 @@ Open `index.html` directly in a browser, or serve the directory with any simple 
 - The contact page includes a form and a calendar embed placeholder ready to replace with a real booking tool.
 - The TMS hub depends on a Worker entrypoint plus D1 configuration to work in production.
 - The TMS research hub route is available at `/TMS`.
+- The Census county heat map route is available at `/census`.
