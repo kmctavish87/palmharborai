@@ -1,9 +1,13 @@
 .git
+.gitignore
 .github
+.wrangler
+.wrangler*
 functions
 worker
 migrations
 .env.example
 wrangler.jsonc
+.wrangler.jsonc.swp
 README.md
 .DS_Store
