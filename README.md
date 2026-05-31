@@ -23,6 +23,7 @@ Core service areas:
 - `services.html` - Services
 - `TMS/index.html` - TMS Research & News Intelligence Hub
 - `census/index.html` - Interactive U.S. Census county heat map
+- `/steeldash` - Proxied Vulcan Steel Market Intelligence Dashboard
 - `solutions.html` - Use Cases / Solutions
 - `about.html` - About
 - `insights.html` - Insights / Blog
@@ -70,6 +71,7 @@ Create environment variables locally and in Cloudflare:
 - `NCBI_API_KEY`
 - `EUROPE_PMC_API_KEY` (optional placeholder for future expansion)
 - `TMS_ADMIN_TOKEN`
+- `STEEL_DASHBOARD_ORIGIN` - origin URL for the hosted Next.js steel dashboard, for example `https://your-vercel-project.vercel.app`
 
 See `.env.example`.
 
@@ -148,3 +150,4 @@ Open `index.html` directly in a browser, or serve the directory with any simple 
 - The TMS hub depends on a Worker entrypoint plus D1 configuration to work in production.
 - The TMS research hub route is available at `/TMS`.
 - The Census county heat map route is available at `/census`.
+- The Steel dashboard route is available at `/steeldash` when `STEEL_DASHBOARD_ORIGIN` is configured.
