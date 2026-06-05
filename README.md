@@ -72,6 +72,7 @@ Create environment variables locally and in Cloudflare:
 - `EUROPE_PMC_API_KEY` (optional placeholder for future expansion)
 - `TMS_ADMIN_TOKEN`
 - `STEEL_DASHBOARD_ORIGIN` - origin URL for the hosted Next.js steel dashboard, for example `https://your-vercel-project.vercel.app`
+- `RESUME_TAILOR_ORIGIN` - origin URL for the hosted Resume Tailor Streamlit app, for example `https://palmharborai-resume-tailor.onrender.com`
 
 See `.env.example`.
 
@@ -151,3 +152,4 @@ Open `index.html` directly in a browser, or serve the directory with any simple 
 - The TMS research hub route is available at `/TMS`.
 - The Census county heat map route is available at `/census`.
 - The Steel dashboard route is available at `/steeldash` when `STEEL_DASHBOARD_ORIGIN` is configured.
+- The Resume Tailor route is available at `/apply` when `RESUME_TAILOR_ORIGIN` is configured. The Dockerized app source lives in `resume-tailor/`.

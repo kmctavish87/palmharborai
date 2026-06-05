@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: palmharborai-resume-tailor
+    env: docker
+    plan: starter
+    autoDeploy: true
+    envVars:
+      - key: BASE_URL_PATH
+        value: apply
+      - key: RESUME_TAILOR_PUBLIC
+        value: true
+      - key: RESUME_SOURCE_FOLDER
+        value: /app/resume_templates
+      - key: OUTPUT_FOLDER
+        value: /tmp/resume-tailor-exports
+      - key: RESUME_TAILOR_ACCESS_CODE
+        sync: false
