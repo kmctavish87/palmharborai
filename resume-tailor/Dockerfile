@@ -16,4 +16,4 @@ COPY resume_templates ./resume_templates
 
 EXPOSE 8501
 
-CMD ["sh", "-c", "streamlit run app.py --server.address=0.0.0.0 --server.port=${PORT:-8501} --server.baseUrlPath=${BASE_URL_PATH:-apply} --server.headless=true --browser.gatherUsageStats=false"]
+CMD ["sh", "-c", "streamlit run app.py --server.address=0.0.0.0 --server.port=${PORT:-8501} --server.baseUrlPath=${BASE_URL_PATH:-apply} --server.headless=true --server.enableCORS=false --server.enableXsrfProtection=false --server.enableWebsocketCompression=false --browser.gatherUsageStats=false"]
