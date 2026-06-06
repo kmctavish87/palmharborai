@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from dataclasses import replace
 
 import streamlit as st
 
@@ -131,10 +132,26 @@ with left:
         with st.expander("Extracted job text", expanded=False):
             st.text_area("Extracted text", value=st.session_state.job_text, height=260)
 
+    metadata_cols = st.columns(2)
+    title_override = metadata_cols[0].text_input(
+        "Job title override",
+        placeholder="Optional",
+    )
+    company_override = metadata_cols[1].text_input(
+        "Company override",
+        placeholder="Optional",
+    )
+
     if st.button("Analyze + Build Preview", disabled=not st.session_state.job_text.strip()):
         try:
             with st.spinner("Matching job requirements against your resume examples..."):
                 job = parse_job_description(st.session_state.job_text, source_url=job_url)
+                if title_override.strip() or company_override.strip():
+                    job = replace(
+                        job,
+                        title=title_override.strip() or job.title,
+                        company=company_override.strip() or job.company,
+                    )
                 resume_files = scan_resume_files()
                 selected = select_best_resume_match(job, resume_files)
                 preview = build_preview(job, selected)
