@@ -797,12 +797,37 @@ def find_label_value(text: str, labels: list[str]) -> str:
 
 def infer_title(text: str) -> str:
     lines = [line.strip() for line in re.split(r"[\n|]", text) if line.strip()]
-    role_words = re.compile(r"(manager|director|lead|specialist|analyst|strategist|consultant|engineer|operator|owner|head|vp|president)", re.I)
-    marketing_copy = re.compile(r"(turn ai|not just|experiments|systems i build|outcomes|clients would say|let.?s build)", re.I)
+    derived = infer_unlabeled_role_title(text)
+    if derived:
+        return derived
+    role_words = re.compile(
+        r"\b(manager|director|lead|specialist|analyst|strategist|consultant|"
+        r"engineer|operator|owner|head|vp|president|marketer)\b",
+        re.I,
+    )
+    rejected_copy = re.compile(
+        r"(turn ai|not just|experiments|systems i build|outcomes|clients would say|"
+        r"let.?s build|qualified leads|booked jobs|client retention|time and cost|"
+        r"automations and internal tools|how you.?ll be measured|compensation|benefits)",
+        re.I,
+    )
     for line in lines[:25]:
-        if 5 <= len(line) <= 90 and role_words.search(line) and not marketing_copy.search(line):
+        if 5 <= len(line) <= 90 and role_words.search(line) and not rejected_copy.search(line):
             return tidy_title(line)
     return "Target Role"
+
+
+def infer_unlabeled_role_title(text: str) -> str:
+    lower = text.lower()
+    if "ai-native marketer" in lower:
+        if "portfolio of accounts" in lower or "account outcomes" in lower:
+            return "AI-Native Account Marketer"
+        return "AI-Native Marketer"
+    if "performance marketing" in lower and "lead generation" in lower:
+        return "Performance Marketing Lead"
+    if "growth marketing" in lower and "lead generation" in lower:
+        return "Growth Marketing Lead"
+    return ""
 
 
 def infer_company(text: str, url: str) -> str:
