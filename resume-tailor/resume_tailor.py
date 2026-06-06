@@ -6,6 +6,7 @@ import subprocess
 import tempfile
 import zipfile
 import os
+import json
 from html import unescape
 from collections import Counter
 from dataclasses import dataclass
@@ -16,6 +17,11 @@ from urllib.parse import parse_qs, urlparse
 import requests
 from bs4 import BeautifulSoup
 from docx import Document
+
+try:
+    from openai import OpenAI
+except ImportError:  # pragma: no cover - lets the non-API fallback still run.
+    OpenAI = None
 
 
 APP_ROOT = Path(__file__).resolve().parent
@@ -30,11 +36,12 @@ RESUME_SOURCE_FOLDER = Path(
     os.getenv("RESUME_SOURCE_FOLDER", str(DEFAULT_RESUME_SOURCE_FOLDER))
 )
 DEFAULT_OUTPUT_FOLDER = (
-    LOCAL_GITHUB_FOLDER / "Generated Resumes"
+    LOCAL_GITHUB_FOLDER / "Exported Resumes"
     if LOCAL_GITHUB_FOLDER.exists()
     else Path(tempfile.gettempdir()) / "resume-tailor-exports"
 )
 OUTPUT_FOLDER = Path(os.getenv("OUTPUT_FOLDER", str(DEFAULT_OUTPUT_FOLDER)))
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
 
 USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -135,6 +142,17 @@ class TailoredArtifacts:
     job: ParsedJob
     added_keywords: list[str]
     length_estimate: str
+
+
+@dataclass
+class TailoringPlan:
+    job: ParsedJob
+    headline: str
+    summary: str
+    competencies: list[str]
+    bullet_rewrites: dict[str, str]
+    ats_keywords: list[str]
+    truthful_keywords: list[str]
 
 
 class ResumeTailorError(Exception):
@@ -370,6 +388,7 @@ def scan_resume_files(folder: Path = RESUME_SOURCE_FOLDER) -> list[Path]:
     excluded_parts = {
         ".venv",
         "Generated Resumes",
+        "Exported Resumes",
         "Final PDFs",
         "Linkedin Apply",
         "LINKEDIN APPLY",
@@ -431,11 +450,132 @@ def build_preview(job: ParsedJob, selected: ResumeCandidate) -> dict[str, object
     }
 
 
+def build_ai_tailoring_plan(job_text: str, selected: ResumeCandidate) -> TailoringPlan:
+    if OpenAI is None:
+        raise ResumeTailorError("Install the openai package before using API tailoring.")
+    if not os.getenv("OPENAI_API_KEY"):
+        raise ResumeTailorError(
+            "OPENAI_API_KEY is not set. Add it as an environment variable, then restart the app."
+        )
+
+    client = OpenAI()
+    source_resume = selected.text[:18000]
+    prompt = f"""
+You are tailoring Kyle McTavish's resume for ATS keyword matching.
+
+Rules:
+- Return JSON only, no markdown.
+- Do not invent employers, dates, degrees, tools, certifications, metrics, or outcomes.
+- Only use experience, tools, metrics, and facts found in SOURCE_RESUME.
+- Optimize for ATS keyword alignment with JOB_DESCRIPTION.
+- Prefer exact important job keywords when they are truthfully supported by SOURCE_RESUME.
+- Keep the resume under 2 pages by writing concise text.
+- Headline max 90 characters.
+- Summary max 85 words.
+- Competencies: 10 to 16 short keyword phrases.
+- Bullet rewrites: map up to 12 existing bullet starts or exact bullet texts to concise replacements.
+- If a job title is not explicit, infer a short role title from the job description.
+
+JSON schema:
+{{
+  "company": "Company name",
+  "job_title": "Role title",
+  "responsibilities": ["..."],
+  "qualifications": ["..."],
+  "ats_keywords": ["keyword or phrase"],
+  "truthful_keywords": ["keyword from ats_keywords supported by SOURCE_RESUME"],
+  "headline": "Kyle-facing resume headline",
+  "summary": "truthful professional summary",
+  "competencies": ["keyword phrase"],
+  "bullet_rewrites": {{
+    "existing bullet text or distinctive starting phrase": "truthful rewritten bullet"
+  }}
+}}
+
+JOB_DESCRIPTION:
+{job_text[:22000]}
+
+SOURCE_RESUME:
+{source_resume}
+"""
+
+    response = client.responses.create(
+        model=OPENAI_MODEL,
+        input=prompt,
+        temperature=0.2,
+    )
+    data = parse_json_object(response.output_text)
+    keywords = clean_string_list(data.get("ats_keywords", []), limit=45)
+    truthful = clean_string_list(data.get("truthful_keywords", []), limit=25)
+    job = ParsedJob(
+        title=clean_text(str(data.get("job_title") or "Target Role"))[:90],
+        company=clean_text(str(data.get("company") or "Company"))[:80],
+        description=clean_text(job_text),
+        responsibilities=clean_string_list(data.get("responsibilities", []), limit=12),
+        qualifications=clean_string_list(data.get("qualifications", []), limit=12),
+        keywords=keywords,
+    )
+    rewrites = {
+        clean_text(str(key))[:220]: clean_text(str(value))[:260]
+        for key, value in (data.get("bullet_rewrites") or {}).items()
+        if clean_text(str(key)) and clean_text(str(value))
+    }
+    return TailoringPlan(
+        job=job,
+        headline=clean_text(str(data.get("headline") or job.title))[:120],
+        summary=clean_text(str(data.get("summary") or ""))[:700],
+        competencies=clean_string_list(data.get("competencies", []), limit=18),
+        bullet_rewrites=rewrites,
+        ats_keywords=keywords,
+        truthful_keywords=truthful,
+    )
+
+
+def build_ai_preview(plan: TailoringPlan, selected: ResumeCandidate) -> dict[str, object]:
+    return {
+        "job_title": plan.job.title,
+        "company": plan.job.company,
+        "selected_resume": str(selected.path),
+        "matched_keywords": plan.ats_keywords[:14],
+        "missing_keywords_added": plan.truthful_keywords[:10],
+        "length_estimate": estimate_resume_length(selected.path),
+    }
+
+
+def parse_json_object(text: str) -> dict:
+    cleaned = text.strip()
+    if cleaned.startswith("```"):
+        cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", cleaned, flags=re.I | re.S)
+    start = cleaned.find("{")
+    end = cleaned.rfind("}")
+    if start == -1 or end == -1:
+        raise ResumeTailorError("The API did not return usable resume instructions.")
+    try:
+        data = json.loads(cleaned[start : end + 1])
+    except json.JSONDecodeError as exc:
+        raise ResumeTailorError("The API returned invalid resume instructions.") from exc
+    if not isinstance(data, dict):
+        raise ResumeTailorError("The API returned resume instructions in the wrong format.")
+    return data
+
+
+def clean_string_list(values, limit: int) -> list[str]:
+    if not isinstance(values, list):
+        return []
+    cleaned = []
+    for value in values:
+        item = clean_text(str(value)).strip(" -•")
+        if item and item not in cleaned:
+            cleaned.append(item[:120])
+    return cleaned[:limit]
+
+
 def export_tailored_documents(
     job: ParsedJob,
     selected: ResumeCandidate,
     include_cover_letter: bool,
     output_folder: Path = OUTPUT_FOLDER,
+    plan: TailoringPlan | None = None,
 ) -> TailoredArtifacts:
     if not output_folder.exists():
         raise ResumeTailorError(
@@ -444,15 +584,14 @@ def export_tailored_documents(
 
     safe_company = safe_filename(job.company)
     safe_title = safe_filename(job.title)
-    resume_path = output_folder / f"{safe_company}_{safe_title}_Kyle_McTavish_Resume.docx"
-    cover_path = (
-        output_folder
-        / f"{safe_company}_{safe_title}_Kyle_McTavish_Cover_Letter.docx"
-    )
+    resume_path = output_folder / f"Kyle_McTavish_{safe_company}_Resume.docx"
+    if resume_path.exists():
+        resume_path = output_folder / f"Kyle_McTavish_{safe_company}_{safe_title}_Resume.docx"
+    cover_path = output_folder / f"Kyle_McTavish_{safe_company}_Cover_Letter.docx"
 
     shutil.copy2(selected.path, resume_path)
     document = Document(resume_path)
-    added_keywords = tailor_resume_document(document, job, selected.text)
+    added_keywords = tailor_resume_document(document, job, selected.text, plan)
 
     shortened = enforce_two_page_limit(document, job)
     if not shortened:
@@ -482,22 +621,34 @@ def export_tailored_documents(
     )
 
 
-def tailor_resume_document(document: Document, job: ParsedJob, source_text: str) -> list[str]:
+def tailor_resume_document(
+    document: Document,
+    job: ParsedJob,
+    source_text: str,
+    plan: TailoringPlan | None = None,
+) -> list[str]:
     source_keywords = set(extract_keywords(source_text, limit=160))
-    allowed_keywords = [keyword for keyword in job.keywords if keyword in source_keywords]
-    missing_truthful = [keyword for keyword in job.keywords if keyword in source_keywords][:8]
+    allowed_keywords = (
+        plan.truthful_keywords if plan else [keyword for keyword in job.keywords if keyword in source_keywords]
+    )
+    missing_truthful = allowed_keywords[:10]
 
-    replace_headline(document, job, allowed_keywords)
-    replace_summary(document, job, allowed_keywords)
+    replace_headline(document, job, allowed_keywords, plan)
+    replace_summary(document, job, allowed_keywords, plan)
     emphasize_skills(document, job.keywords)
-    reorder_competencies(document, job.keywords)
-    tailor_bullets_in_place(document, job.keywords)
+    reorder_competencies(document, job.keywords, plan)
+    tailor_bullets_in_place(document, job.keywords, plan)
     return missing_truthful
 
 
-def replace_headline(document: Document, job: ParsedJob, keywords: list[str]) -> None:
+def replace_headline(
+    document: Document,
+    job: ParsedJob,
+    keywords: list[str],
+    plan: TailoringPlan | None = None,
+) -> None:
     focus = build_focus_phrase(keywords)
-    headline = f"{job.title} | {focus}" if focus else job.title
+    headline = plan.headline if plan and plan.headline else f"{job.title} | {focus}" if focus else job.title
     for paragraph in document.paragraphs[:12]:
         text = paragraph.text.strip()
         if not text or "kyle" in text.lower() or "@" in text:
@@ -507,7 +658,12 @@ def replace_headline(document: Document, job: ParsedJob, keywords: list[str]) ->
             return
 
 
-def replace_summary(document: Document, job: ParsedJob, keywords: list[str]) -> None:
+def replace_summary(
+    document: Document,
+    job: ParsedJob,
+    keywords: list[str],
+    plan: TailoringPlan | None = None,
+) -> None:
     summary_index = find_section_index(document.paragraphs, "summary")
     target = (
         next_content_paragraph(document.paragraphs, summary_index + 1)
@@ -515,6 +671,10 @@ def replace_summary(document: Document, job: ParsedJob, keywords: list[str]) -> 
         else first_profile_paragraph(document.paragraphs)
     )
     if target is None:
+        return
+
+    if plan and plan.summary:
+        set_paragraph_text(target, plan.summary)
         return
 
     supported = prioritized_supported_terms(keywords)
@@ -547,19 +707,31 @@ def emphasize_skills(document: Document, job_keywords: list[str]) -> None:
             set_paragraph_text(paragraph, replacements[text])
 
 
-def tailor_bullets_in_place(document: Document, job_keywords: list[str]) -> None:
+def tailor_bullets_in_place(
+    document: Document,
+    job_keywords: list[str],
+    plan: TailoringPlan | None = None,
+) -> None:
     for paragraph in document.paragraphs:
         if not is_bullet_paragraph(paragraph):
             continue
         text = paragraph.text.strip()
-        replacement = rewrite_supported_bullet(text, job_keywords)
+        replacement = rewrite_supported_bullet(text, job_keywords, plan)
         if replacement != text:
             set_paragraph_text(paragraph, replacement)
 
 
-def rewrite_supported_bullet(text: str, job_keywords: list[str]) -> str:
+def rewrite_supported_bullet(
+    text: str,
+    job_keywords: list[str],
+    plan: TailoringPlan | None = None,
+) -> str:
     normalized = text.strip()
     lower = normalized.lower()
+    if plan:
+        for original, replacement in plan.bullet_rewrites.items():
+            if original.lower() in lower or lower.startswith(original.lower()[:60]):
+                return replacement
     if "managed entirely wipfli" in lower:
         return (
             "Managed Wipfli's AI services and solutions marketing focus, supporting "
@@ -667,7 +839,11 @@ def prioritized_supported_terms(keywords: list[str]) -> list[str]:
     set_paragraph_text(target, replacement)
 
 
-def reorder_competencies(document: Document, job_keywords: list[str]) -> None:
+def reorder_competencies(
+    document: Document,
+    job_keywords: list[str],
+    plan: TailoringPlan | None = None,
+) -> None:
     section_index = find_section_index(document.paragraphs, "competencies")
     if section_index is None:
         return
@@ -682,6 +858,12 @@ def reorder_competencies(document: Document, job_keywords: list[str]) -> None:
         items = [item.strip() for item in re.split(r"[;|,]", text) if item.strip()]
         if len(items) < 4:
             continue
+        if plan and plan.competencies:
+            current = {item.lower() for item in items}
+            additions = [
+                item for item in plan.competencies if item.lower() not in current
+            ]
+            items = (additions + items)[: max(len(items), 12)]
         ranked = sorted(
             items,
             key=lambda item: keyword_relevance(item, job_keywords),

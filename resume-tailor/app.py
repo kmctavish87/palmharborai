@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from dataclasses import replace
 
 import streamlit as st
 
@@ -10,6 +9,8 @@ from resume_tailor import (
     RESUME_SOURCE_FOLDER,
     ResumeTailorError,
     ScrapeError,
+    build_ai_preview,
+    build_ai_tailoring_plan,
     build_preview,
     export_tailored_documents,
     extract_job_text_from_url,
@@ -49,6 +50,7 @@ def initialize_state() -> None:
     defaults = {
         "job_text": "",
         "job": None,
+        "plan": None,
         "selected_resume": None,
         "preview": None,
         "scrape_failed": False,
@@ -98,15 +100,15 @@ with st.sidebar:
     st.divider()
     st.write("Notes")
     st.write(
-        "Some job sites, especially LinkedIn and Workday-hosted flows, may block automated reads. "
-        "Use the manual paste box when that happens."
+        "Paste a job URL first. If the site blocks automated reading, paste the full job description. "
+        "OpenAI handles parsing, ATS keywords, and resume tailoring when OPENAI_API_KEY is configured."
     )
 
 
 left, right = st.columns([1.05, 0.95], gap="large")
 
 with left:
-    st.subheader("1. Job Posting")
+    st.subheader("1. Job Input")
     job_url = st.text_input("Job posting URL", placeholder="https://company.com/jobs/...")
     fetch_clicked = st.button("Fetch Job Description", type="primary")
 
@@ -120,42 +122,33 @@ with left:
             st.session_state.scrape_failed = True
             st.warning(str(exc))
 
-    show_manual = st.session_state.scrape_failed or not st.session_state.job_text
-    if show_manual:
-        st.session_state.job_text = st.text_area(
-            "Manual job description fallback",
-            value=st.session_state.job_text,
-            height=280,
-            placeholder="Paste the job description, responsibilities, qualifications, and company details here.",
-        )
-    else:
+    st.session_state.job_text = st.text_area(
+        "Job description",
+        value=st.session_state.job_text,
+        height=360,
+        placeholder="Paste the full job description here if the URL cannot be read.",
+    )
+    if st.session_state.job_text:
         with st.expander("Extracted job text", expanded=False):
             st.text_area("Extracted text", value=st.session_state.job_text, height=260)
 
-    metadata_cols = st.columns(2)
-    title_override = metadata_cols[0].text_input(
-        "Job title override",
-        placeholder="Optional",
-    )
-    company_override = metadata_cols[1].text_input(
-        "Company override",
-        placeholder="Optional",
-    )
-
-    if st.button("Analyze + Build Preview", disabled=not st.session_state.job_text.strip()):
+    if st.button("Generate Tailored Resume Preview", disabled=not st.session_state.job_text.strip()):
         try:
-            with st.spinner("Matching job requirements against your resume examples..."):
-                job = parse_job_description(st.session_state.job_text, source_url=job_url)
-                if title_override.strip() or company_override.strip():
-                    job = replace(
-                        job,
-                        title=title_override.strip() or job.title,
-                        company=company_override.strip() or job.company,
-                    )
+            with st.spinner("Reading the job, extracting ATS keywords, and tailoring the resume..."):
+                parsed_job = parse_job_description(st.session_state.job_text, source_url=job_url)
                 resume_files = scan_resume_files()
-                selected = select_best_resume_match(job, resume_files)
-                preview = build_preview(job, selected)
+                selected = select_best_resume_match(parsed_job, resume_files)
+                try:
+                    plan = build_ai_tailoring_plan(st.session_state.job_text, selected)
+                    job = plan.job
+                    preview = build_ai_preview(plan, selected)
+                except ResumeTailorError as api_exc:
+                    plan = None
+                    job = parsed_job
+                    preview = build_preview(job, selected)
+                    st.warning(str(api_exc))
                 st.session_state.job = job
+                st.session_state.plan = plan
                 st.session_state.selected_resume = selected
                 st.session_state.preview = preview
             st.success("Preview is ready.")
@@ -168,6 +161,7 @@ with right:
     preview = st.session_state.preview
     job = st.session_state.job
     selected = st.session_state.selected_resume
+    plan = st.session_state.plan
 
     if not preview:
         st.info("Paste or fetch a job description, then build the preview.")
@@ -210,6 +204,7 @@ with right:
                             job,
                             selected,
                             include_cover_letter=export_bundle,
+                            plan=plan,
                         )
                     st.success("Export complete.")
                     st.write("Resume")

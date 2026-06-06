@@ -4,3 +4,4 @@ requests>=2.32
 urllib3<2
 beautifulsoup4>=4.12
 lxml>=5.2
+openai>=1.84
