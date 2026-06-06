@@ -6,6 +6,7 @@ import subprocess
 import tempfile
 import zipfile
 import os
+from html import unescape
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
@@ -155,6 +156,9 @@ def extract_job_text_from_url(url: str) -> str:
     ashby_text = extract_ashby_job_text(cleaned_url)
     if ashby_text:
         return ashby_text
+    greenhouse_text = extract_greenhouse_job_text(cleaned_url)
+    if greenhouse_text:
+        return greenhouse_text
 
     try:
         response = requests.get(
@@ -208,6 +212,53 @@ def extract_ashby_job_text(url: str) -> str:
     if not match:
         return ""
     return fetch_ashby_job(match.group(1), job_id)
+
+
+def extract_greenhouse_job_text(url: str) -> str:
+    parsed = urlparse(url)
+    if "greenhouse.io" not in parsed.netloc:
+        return ""
+
+    parts = [part for part in parsed.path.strip("/").split("/") if part]
+    board_slug = ""
+    job_id = ""
+    if parsed.netloc.startswith("boards.greenhouse.io") and len(parts) >= 2:
+        board_slug, job_id = parts[0], parts[1]
+    elif parsed.netloc.startswith("job-boards.greenhouse.io") and len(parts) >= 3:
+        board_slug, job_id = parts[0], parts[2]
+
+    job_id = re.sub(r"\D", "", job_id)
+    if not board_slug or not job_id:
+        return ""
+    return fetch_greenhouse_job(board_slug, job_id)
+
+
+def fetch_greenhouse_job(board_slug: str, job_id: str) -> str:
+    api_url = (
+        f"https://boards-api.greenhouse.io/v1/boards/{board_slug}/jobs/{job_id}"
+        "?questions=false"
+    )
+    try:
+        response = requests.get(api_url, headers={"User-Agent": USER_AGENT}, timeout=15)
+        response.raise_for_status()
+        payload = response.json()
+    except (requests.RequestException, ValueError):
+        return ""
+
+    description = html_to_text(unescape(payload.get("content", "")))
+    company = (payload.get("company_name") or board_slug_to_company(board_slug)).strip()
+    location = (payload.get("location") or {}).get("name", "")
+    return clean_text(
+        "\n".join(
+            [
+                f"Company: {company}",
+                f"Job Title: {(payload.get('title') or '').strip()}",
+                f"Location: {location.strip()}",
+                "",
+                description,
+            ]
+        )
+    )
 
 
 def fetch_ashby_job(board_slug: str, job_id: str) -> str:
@@ -268,11 +319,16 @@ def parse_job_description(text: str, source_url: str = "") -> ParsedJob:
     if len(normalized) < 100:
         raise ResumeTailorError("Paste a fuller job description before continuing.")
 
-    title = find_label_value(normalized, ["job title", "title", "role"]) or infer_title(
-        normalized
+    source_metadata = parse_source_job_metadata(source_url)
+    title = (
+        source_metadata.get("title", "")
+        or find_label_value(normalized, ["job title", "position", "role"])
+        or infer_title(normalized)
     )
-    company = find_label_value(normalized, ["company", "organization"]) or infer_company(
-        normalized, source_url
+    company = (
+        source_metadata.get("company", "")
+        or find_label_value(normalized, ["company", "organization"])
+        or infer_company(normalized, source_url)
     )
     responsibilities = extract_section_items(
         normalized, ["responsibilities", "what you will do", "the role", "about the role"]
@@ -292,6 +348,20 @@ def parse_job_description(text: str, source_url: str = "") -> ParsedJob:
         keywords=keywords[:30],
         source_url=source_url,
     )
+
+
+def parse_source_job_metadata(source_url: str) -> dict[str, str]:
+    if not source_url.strip():
+        return {}
+
+    for extractor in (extract_greenhouse_job_text, extract_ashby_job_text):
+        source_text = extractor(source_url)
+        if source_text:
+            return {
+                "title": find_label_value(source_text, ["job title"]),
+                "company": find_label_value(source_text, ["company"]),
+            }
+    return {}
 
 
 def scan_resume_files(folder: Path = RESUME_SOURCE_FOLDER) -> list[Path]:
@@ -715,7 +785,11 @@ def clean_text(text: str) -> str:
 
 def find_label_value(text: str, labels: list[str]) -> str:
     for label in labels:
-        match = re.search(rf"{label}\s*[:\-]\s*([^\n|•]+)", text, re.I)
+        match = re.search(
+            rf"(?:^|\n)\s*{re.escape(label)}\s*[:\-]\s*([^\n|•]+)",
+            text,
+            re.I,
+        )
         if match:
             return tidy_title(match.group(1)[:80])
     return ""
@@ -732,6 +806,14 @@ def infer_title(text: str) -> str:
 
 
 def infer_company(text: str, url: str) -> str:
+    first_line_company = re.match(
+        r"^([A-Z][A-Za-z0-9&. ]{2,40}?)\s+"
+        r"(?:empowers|is|provides|builds|helps|creates|delivers)\b",
+        text.strip(),
+    )
+    if first_line_company:
+        return tidy_title(first_line_company.group(1))
+
     match = re.search(
         r"\bat\s+([A-Za-z][A-Za-z0-9&. ]{2,50}?)(?:,|\s+you\b|\s+we\b|\.|\n)",
         text,
@@ -740,6 +822,9 @@ def infer_company(text: str, url: str) -> str:
         return tidy_title(match.group(1))
     parsed = urlparse(url if urlparse(url).scheme else f"https://{url}")
     domain = parsed.netloc.replace("www.", "")
+    parts = [part for part in parsed.path.strip("/").split("/") if part]
+    if "greenhouse.io" in domain and parts:
+        return board_slug_to_company(parts[0])
     if domain and domain not in {"jobs.ashbyhq.com", "api.ashbyhq.com"}:
         return tidy_title(domain_to_company(domain))
     return ""
