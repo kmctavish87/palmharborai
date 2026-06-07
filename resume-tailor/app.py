@@ -142,11 +142,14 @@ with left:
                     plan = build_ai_tailoring_plan(st.session_state.job_text, selected)
                     job = plan.job
                     preview = build_ai_preview(plan, selected)
-                except ResumeTailorError as api_exc:
+                except Exception as api_exc:
                     plan = None
                     job = parsed_job
                     preview = build_preview(job, selected)
-                    st.warning(str(api_exc))
+                    st.warning(
+                        "OpenAI tailoring is unavailable right now, so the app is using the local fallback. "
+                        f"Details: {api_exc}"
+                    )
                 st.session_state.job = job
                 st.session_state.plan = plan
                 st.session_state.selected_resume = selected
