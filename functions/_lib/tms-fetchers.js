@@ -43,7 +43,12 @@ export async function fetchNewsCandidates(env) {
   const settled = await Promise.allSettled(providers);
   const items = settled.flatMap((result) => (result.status === "fulfilled" ? result.value : []));
 
-  return dedupeNews(items).slice(0, DEFAULT_NEWS_LIMIT);
+  const news = dedupeNews(items).slice(0, DEFAULT_NEWS_LIMIT);
+  if (news.length || env.NEWS_API_KEY) {
+    return news;
+  }
+
+  return dedupeNews(await fetchGoogleNewsRssStories()).slice(0, DEFAULT_NEWS_LIMIT);
 }
 
 async function fetchPubMedStudies(env) {
@@ -217,7 +222,7 @@ async function fetchGoogleNewsRssStories() {
   const now = isoNow();
   const articles = [];
 
-  await Promise.all(
+  const settled = await Promise.allSettled(
     NEWS_SEARCH_TERMS.slice(0, 4).map(async (term) => {
       // RSS provides a no-key fallback when a commercial news API is unavailable.
       const url = new URL("https://news.google.com/rss/search");
@@ -227,8 +232,13 @@ async function fetchGoogleNewsRssStories() {
       url.searchParams.set("ceid", "US:en");
 
       const response = await fetch(url.toString());
+      if (!response.ok) {
+        throw new Error(`Google News RSS request failed with ${response.status}`);
+      }
+
       const xml = await response.text();
       const items = xml.match(/<item>[\s\S]*?<\/item>/g) || [];
+      const parsedArticles = [];
 
       items.slice(0, 10).forEach((itemXml) => {
         const title = decodeXml(extractXmlValue(itemXml, "title"));
@@ -238,7 +248,7 @@ async function fetchGoogleNewsRssStories() {
         const source = decodeXml(extractXmlValue(itemXml, "source")) || "Google News RSS";
         const tags = inferTags({ title, summary: description, source });
 
-        articles.push({
+        parsedArticles.push({
           title: normalizeWhitespace(title),
           source: normalizeWhitespace(source),
           author: "",
@@ -252,8 +262,16 @@ async function fetchGoogleNewsRssStories() {
           last_refreshed: now,
         });
       });
+
+      return parsedArticles;
     })
   );
+
+  settled.forEach((result) => {
+    if (result.status === "fulfilled") {
+      articles.push(...result.value);
+    }
+  });
 
   return articles;
 }
