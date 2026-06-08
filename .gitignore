@@ -2,3 +2,7 @@
 *.swp
 Advanced Search *.csv
 .wrangler/
+.env
+.env.*
+.dev.vars
+.dev.vars.*

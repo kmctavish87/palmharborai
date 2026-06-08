@@ -20,10 +20,13 @@ const EUROPE_PMC_BASE = "https://www.ebi.ac.uk/europepmc/webservices/rest/search
 export async function fetchStudyCandidates(env) {
   // We aggregate from both PubMed and Europe PMC, then dedupe aggressively so the hub
   // can show the broadest set of recent TMS studies without double-counting records.
-  const [pubmedRecords, europePmcRecords] = await Promise.all([
+  const settled = await Promise.allSettled([
     fetchPubMedStudies(env),
     fetchEuropePmcStudies(),
   ]);
+  const [pubmedRecords, europePmcRecords] = settled.map((result) =>
+    result.status === "fulfilled" ? result.value : []
+  );
 
   return dedupeStudies([...pubmedRecords, ...europePmcRecords]).slice(0, DEFAULT_STUDY_LIMIT);
 }
