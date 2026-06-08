@@ -31,6 +31,7 @@ async function initTmsHub() {
     selectedCount: document.getElementById("tmsSelectedCount"),
     lastUpdated: document.getElementById("tmsLastUpdated"),
     statusBar: document.getElementById("tmsStatusBar"),
+    generationStatus: document.getElementById("tmsGenerationStatus"),
     generatedDraft: document.getElementById("generatedDraft"),
     generateDraftButton: document.getElementById("generateDraftButton"),
     clearSelectionsButton: document.getElementById("clearSelectionsButton"),
@@ -267,6 +268,7 @@ function documentTmsElements() {
     generatedDraft: document.getElementById("generatedDraft"),
     lastUpdated: document.getElementById("tmsLastUpdated"),
     statusBar: document.getElementById("tmsStatusBar"),
+    generationStatus: document.getElementById("tmsGenerationStatus"),
     generateDraftButton: document.getElementById("generateDraftButton"),
     clearSelectionsButton: document.getElementById("clearSelectionsButton"),
     copyDraftButton: document.getElementById("copyDraftButton"),
@@ -368,8 +370,7 @@ async function generateDraft(state, elements) {
 
   // The API receives only selected source metadata and summaries so the generated
   // draft stays grounded in the chosen material and is easier to review.
-  setStatus(elements, "Generating a draft from selected sources...");
-  elements.generateDraftButton.disabled = true;
+  setGenerationState(elements, true);
 
   try {
     const response = await fetch("/api/tms/generate", {
@@ -398,7 +399,7 @@ async function generateDraft(state, elements) {
       "The draft could not be generated. Check the OpenAI key and try again."
     );
   } finally {
-    elements.generateDraftButton.disabled = false;
+    setGenerationState(elements, false);
   }
 }
 
@@ -414,6 +415,20 @@ function updateActiveChip(query) {
 
 function setStatus(elements, message) {
   elements.statusBar.textContent = message;
+}
+
+function setGenerationState(elements, isGenerating) {
+  elements.generateDraftButton.disabled = isGenerating;
+  elements.generateDraftButton.textContent = isGenerating ? "Generating..." : "Generate Draft";
+  elements.clearSelectionsButton.disabled = isGenerating;
+
+  if (elements.generationStatus) {
+    elements.generationStatus.hidden = !isGenerating;
+  }
+
+  if (isGenerating) {
+    setStatus(elements, "Generating a draft from selected sources. This can take about a minute.");
+  }
 }
 
 function formatDate(value) {
