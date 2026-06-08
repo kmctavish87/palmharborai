@@ -1,6 +1,13 @@
 import { getTmsPayload, isRefreshDue, refreshTmsData } from "../functions/_lib/tms-refresh.js";
 
 const OPENAI_URL = "https://api.openai.com/v1/responses";
+const TMS_HOSTS = new Set(["tms.palmharborai.com"]);
+const TMS_ASSET_PATHS = new Map([
+  ["/", "/TMS/index.html"],
+  ["/index.html", "/TMS/index.html"],
+  ["/tms.css", "/TMS/tms.css"],
+  ["/tms.js", "/TMS/tms.js"],
+]);
 
 export default {
   async fetch(request, env, ctx) {
@@ -26,9 +33,29 @@ export default {
       return handleTmsGenerate(request, env);
     }
 
+    if (isTmsHost(url.hostname)) {
+      return serveTmsHostAsset(request, env);
+    }
+
     return env.ASSETS.fetch(request);
   },
 };
+
+function isTmsHost(hostname) {
+  return TMS_HOSTS.has(hostname.toLowerCase());
+}
+
+function serveTmsHostAsset(request, env) {
+  const url = new URL(request.url);
+  const mappedPath = TMS_ASSET_PATHS.get(url.pathname);
+
+  if (!mappedPath) {
+    return env.ASSETS.fetch(request);
+  }
+
+  url.pathname = mappedPath;
+  return env.ASSETS.fetch(new Request(url.toString(), request));
+}
 
 async function proxySteelDashboard(request, env) {
   if (!env.STEEL_DASHBOARD_ORIGIN) {
