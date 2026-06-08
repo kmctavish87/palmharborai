@@ -4,6 +4,10 @@ import { fetchNewsCandidates, fetchStudyCandidates } from "./tms-fetchers.js";
 import { isoNow } from "./tms-utils.js";
 
 export async function refreshTmsData(env) {
+  if (!hasTmsDatabase(env)) {
+    throw new Error("TMS_DB binding is not configured.");
+  }
+
   const createdAt = isoNow();
   await ensureTmsSchema(env);
 
@@ -34,6 +38,18 @@ export async function refreshTmsData(env) {
 }
 
 export async function getTmsPayload(env) {
+  if (!hasTmsDatabase(env)) {
+    const createdAt = isoNow();
+    const [studies, news] = await Promise.all([fetchStudyCandidates(env), fetchNewsCandidates(env)]);
+
+    return {
+      studies,
+      news,
+      lastUpdated: createdAt,
+      source: "live-fetch",
+    };
+  }
+
   await ensureTmsSchema(env);
   let { studies, news } = await getHubData(env);
   const lastRefresh = await getLastRefreshInfo(env);
@@ -53,6 +69,10 @@ export async function getTmsPayload(env) {
 }
 
 export async function isRefreshDue(env) {
+  if (!hasTmsDatabase(env)) {
+    return false;
+  }
+
   await ensureTmsSchema(env);
   const lastRefresh = await getLastRefreshInfo(env);
   if (!lastRefresh?.created_at) {
@@ -61,4 +81,8 @@ export async function isRefreshDue(env) {
 
   const elapsed = Date.now() - new Date(lastRefresh.created_at).getTime();
   return elapsed >= REFRESH_INTERVAL_DAYS * 24 * 60 * 60 * 1000;
+}
+
+function hasTmsDatabase(env) {
+  return Boolean(env?.TMS_DB?.prepare);
 }
