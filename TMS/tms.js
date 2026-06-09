@@ -131,12 +131,7 @@ async function loadHubData(state, elements) {
   setStatus(elements, "Loading the latest TMS research and news sources...");
 
   try {
-    const response = await fetch("/api/tms");
-    if (!response.ok) {
-      throw new Error("Unable to load TMS intelligence data.");
-    }
-
-    const payload = await response.json();
+    const payload = await fetchTmsPayloadWithNewsRetry();
     state.studies = payload.studies || [];
     state.news = payload.news || [];
     state.lastUpdated = payload.lastUpdated || null;
@@ -156,6 +151,26 @@ async function loadHubData(state, elements) {
     );
     console.error(error);
   }
+}
+
+async function fetchTmsPayloadWithNewsRetry() {
+  const payload = await fetchTmsPayload();
+  if ((payload.news || []).length) {
+    return payload;
+  }
+
+  await new Promise((resolve) => window.setTimeout(resolve, 1200));
+  const retryPayload = await fetchTmsPayload();
+  return (retryPayload.news || []).length ? retryPayload : payload;
+}
+
+async function fetchTmsPayload() {
+  const response = await fetch(`/api/tms?cacheBust=${Date.now()}`);
+  if (!response.ok) {
+    throw new Error("Unable to load TMS intelligence data.");
+  }
+
+  return response.json();
 }
 
 function renderHub(state, elements) {

@@ -39,11 +39,19 @@ export async function fetchNewsCandidates(env) {
   }
 
   providers.push(fetchGoogleNewsRssStories());
+  providers.push(fetchBingNewsRssStories());
 
   const settled = await Promise.allSettled(providers);
   const items = settled.flatMap((result) => (result.status === "fulfilled" ? result.value : []));
 
-  return dedupeNews(items).slice(0, DEFAULT_NEWS_LIMIT);
+  const news = dedupeNews(items).slice(0, DEFAULT_NEWS_LIMIT);
+  if (news.length || env.NEWS_API_KEY) {
+    return news;
+  }
+
+  const retrySettled = await Promise.allSettled([fetchGoogleNewsRssStories(), fetchBingNewsRssStories()]);
+  const retryItems = retrySettled.flatMap((result) => (result.status === "fulfilled" ? result.value : []));
+  return dedupeNews(retryItems).slice(0, DEFAULT_NEWS_LIMIT);
 }
 
 async function fetchPubMedStudies(env) {
@@ -217,7 +225,7 @@ async function fetchGoogleNewsRssStories() {
   const now = isoNow();
   const articles = [];
 
-  await Promise.all(
+  const settled = await Promise.allSettled(
     NEWS_SEARCH_TERMS.slice(0, 4).map(async (term) => {
       // RSS provides a no-key fallback when a commercial news API is unavailable.
       const url = new URL("https://news.google.com/rss/search");
@@ -226,9 +234,16 @@ async function fetchGoogleNewsRssStories() {
       url.searchParams.set("gl", "US");
       url.searchParams.set("ceid", "US:en");
 
-      const response = await fetch(url.toString());
+      const response = await fetch(url.toString(), {
+        headers: { "User-Agent": "Mozilla/5.0 PalmHarborAI TMS research monitor" },
+      });
+      if (!response.ok) {
+        throw new Error(`Google News RSS request failed with ${response.status}`);
+      }
+
       const xml = await response.text();
       const items = xml.match(/<item>[\s\S]*?<\/item>/g) || [];
+      const parsedArticles = [];
 
       items.slice(0, 10).forEach((itemXml) => {
         const title = decodeXml(extractXmlValue(itemXml, "title"));
@@ -238,7 +253,7 @@ async function fetchGoogleNewsRssStories() {
         const source = decodeXml(extractXmlValue(itemXml, "source")) || "Google News RSS";
         const tags = inferTags({ title, summary: description, source });
 
-        articles.push({
+        parsedArticles.push({
           title: normalizeWhitespace(title),
           source: normalizeWhitespace(source),
           author: "",
@@ -252,8 +267,73 @@ async function fetchGoogleNewsRssStories() {
           last_refreshed: now,
         });
       });
+
+      return parsedArticles;
     })
   );
+
+  settled.forEach((result) => {
+    if (result.status === "fulfilled") {
+      articles.push(...result.value);
+    }
+  });
+
+  return articles;
+}
+
+async function fetchBingNewsRssStories() {
+  const now = isoNow();
+  const articles = [];
+
+  const settled = await Promise.allSettled(
+    NEWS_SEARCH_TERMS.slice(0, 5).map(async (term) => {
+      const url = new URL("https://www.bing.com/news/search");
+      url.searchParams.set("q", `"${term}"`);
+      url.searchParams.set("format", "rss");
+
+      const response = await fetch(url.toString(), {
+        headers: { "User-Agent": "Mozilla/5.0 PalmHarborAI TMS research monitor" },
+      });
+      if (!response.ok) {
+        throw new Error(`Bing News RSS request failed with ${response.status}`);
+      }
+
+      const xml = await response.text();
+      const items = xml.match(/<item>[\s\S]*?<\/item>/g) || [];
+      const parsedArticles = [];
+
+      items.slice(0, 10).forEach((itemXml) => {
+        const title = decodeXml(extractXmlValue(itemXml, "title"));
+        const link = decodeXml(extractXmlValue(itemXml, "link"));
+        const pubDate = decodeXml(extractXmlValue(itemXml, "pubDate"));
+        const description = stripHtml(decodeXml(extractXmlValue(itemXml, "description")));
+        const source = decodeXml(extractXmlValue(itemXml, "News:Source")) || "Bing News";
+        const tags = inferTags({ title, summary: description, source });
+
+        parsedArticles.push({
+          title: normalizeWhitespace(title),
+          source: normalizeWhitespace(source),
+          author: "",
+          summary: normalizeWhitespace(description) || "Open the source for the full story.",
+          published_date: normalizeWhitespace(pubDate),
+          url: link,
+          image_url: "",
+          tags,
+          condition_category: inferConditionCategory(tags),
+          date_added: now,
+          last_refreshed: now,
+        });
+      });
+
+      return parsedArticles;
+    })
+  );
+
+  settled.forEach((result) => {
+    if (result.status === "fulfilled") {
+      articles.push(...result.value);
+    }
+  });
 
   return articles;
 }
