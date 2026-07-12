@@ -21,6 +21,10 @@ export default {
       return proxyResumeTailor(request, env);
     }
 
+    if (url.pathname === "/flightpal" || url.pathname.startsWith("/flightpal/")) {
+      return proxyFlightPal(request, env);
+    }
+
     if (url.pathname === "/api/tms" && request.method === "GET") {
       return handleTmsIndex(env, ctx);
     }
@@ -103,6 +107,43 @@ async function proxyResumeTailor(request, env) {
   }
 
   const originUrl = new URL(env.RESUME_TAILOR_ORIGIN);
+  const targetUrl = new URL(request.url);
+  targetUrl.protocol = originUrl.protocol;
+  targetUrl.hostname = originUrl.hostname;
+  targetUrl.port = originUrl.port;
+  targetUrl.username = "";
+  targetUrl.password = "";
+
+  const headers = new Headers(request.headers);
+  headers.set("host", targetUrl.host);
+  headers.set("x-forwarded-host", incomingUrl.host);
+  headers.set("x-forwarded-proto", incomingUrl.protocol.replace(":", ""));
+
+  const proxyRequest = new Request(targetUrl.toString(), {
+    method: request.method,
+    headers,
+    body: ["GET", "HEAD"].includes(request.method) ? undefined : request.body,
+    redirect: "manual",
+  });
+
+  return fetch(proxyRequest);
+}
+
+async function proxyFlightPal(request, env) {
+  if (!env.FLIGHTPAL_ORIGIN) {
+    return new Response("FlightPal origin is not configured.", {
+      status: 503,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
+  }
+
+  const incomingUrl = new URL(request.url);
+  if (incomingUrl.pathname === "/flightpal") {
+    incomingUrl.pathname = "/flightpal/";
+    return Response.redirect(incomingUrl.toString(), 301);
+  }
+
+  const originUrl = new URL(env.FLIGHTPAL_ORIGIN);
   const targetUrl = new URL(request.url);
   targetUrl.protocol = originUrl.protocol;
   targetUrl.hostname = originUrl.hostname;

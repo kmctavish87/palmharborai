@@ -73,6 +73,7 @@ Create environment variables locally and in Cloudflare:
 - `TMS_ADMIN_TOKEN`
 - `STEEL_DASHBOARD_ORIGIN` - origin URL for the hosted Next.js steel dashboard, for example `https://your-vercel-project.vercel.app`
 - `RESUME_TAILOR_ORIGIN` - origin URL for the hosted Resume Tailor Streamlit app, for example `https://palmharborai-resume-tailor.onrender.com`
+- `FLIGHTPAL_ORIGIN` - origin URL for the hosted FlightPal Next.js app, for example `https://flightpal.onrender.com`
 
 See `.env.example`.
 
@@ -153,3 +154,4 @@ Open `index.html` directly in a browser, or serve the directory with any simple 
 - The Census county heat map route is available at `/census`.
 - The Steel dashboard route is available at `/steeldash` when `STEEL_DASHBOARD_ORIGIN` is configured.
 - The Resume Tailor route is available at `/apply` when `RESUME_TAILOR_ORIGIN` is configured. The Dockerized app source lives in `resume-tailor/`.
+- The FlightPal route is available at `/flightpal` when `FLIGHTPAL_ORIGIN` is configured. FlightPal should be deployed with `NEXT_PUBLIC_BASE_PATH=/flightpal`.
