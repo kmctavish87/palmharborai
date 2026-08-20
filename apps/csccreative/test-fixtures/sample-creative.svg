@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="628" viewBox="0 0 1200 628">
+  <rect width="1200" height="628" fill="#123b2b"/>
+  <circle cx="1000" cy="40" r="310" fill="#f07a44"/>
+  <circle cx="1000" cy="40" r="225" fill="#c9f4de"/>
+  <text x="74" y="90" fill="#c9f4de" font-family="Arial, sans-serif" font-size="24" font-weight="700">LAUNDRY PASS</text>
+  <text x="74" y="225" fill="#ffffff" font-family="Arial, sans-serif" font-size="66" font-weight="700">Laundry day,</text>
+  <text x="74" y="300" fill="#ffffff" font-family="Arial, sans-serif" font-size="66" font-weight="700">simplified.</text>
+  <text x="74" y="365" fill="#c7d6cf" font-family="Arial, sans-serif" font-size="27">Predictable costs. One easy monthly plan.</text>
+  <rect x="74" y="422" width="224" height="66" rx="33" fill="#f07a44"/>
+  <text x="186" y="465" fill="#ffffff" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700">LEARN MORE</text>
+  <rect x="906" y="212" width="186" height="286" rx="28" fill="#ffffff" opacity=".94"/>
+  <circle cx="999" cy="324" r="66" fill="#dfe8e2"/>
+  <circle cx="999" cy="324" r="47" fill="#ffffff" stroke="#123b2b" stroke-width="9"/>
+  <rect x="947" y="411" width="104" height="13" rx="6" fill="#123b2b"/>
+  <rect x="947" y="439" width="72" height="10" rx="5" fill="#9cac9f"/>
+</svg>

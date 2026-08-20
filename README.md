@@ -23,6 +23,8 @@ Core service areas:
 - `services.html` - Services
 - `TMS/index.html` - TMS Research & News Intelligence Hub
 - `census/index.html` - Interactive U.S. Census county heat map
+- `csccreative/index.html` - CSC Creative Studio production build
+- `apps/csccreative` - CSC Creative Studio Next.js source
 - `/steeldash` - Proxied Vulcan Steel Market Intelligence Dashboard
 - `solutions.html` - Use Cases / Solutions
 - `about.html` - About
@@ -155,3 +157,4 @@ Open `index.html` directly in a browser, or serve the directory with any simple 
 - The Steel dashboard route is available at `/steeldash` when `STEEL_DASHBOARD_ORIGIN` is configured.
 - The Resume Tailor route is available at `/apply` when `RESUME_TAILOR_ORIGIN` is configured. The Dockerized app source lives in `resume-tailor/`.
 - The FlightPal route is available at `/flightpal` when `FLIGHTPAL_ORIGIN` is configured. FlightPal should be deployed with `NEXT_PUBLIC_BASE_PATH=/flightpal`.
+- The CSC Creative Studio is available at `/csccreative`. Rebuild its checked-in static bundle with `npm --prefix apps/csccreative run build:static`, then copy `apps/csccreative/out/` into `csccreative/` before deployment.

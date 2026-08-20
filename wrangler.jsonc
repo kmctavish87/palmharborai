@@ -6,7 +6,7 @@
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*", "/apply", "/apply/*", "/flightpal", "/flightpal/*"]
+    "run_worker_first": ["/api/*", "/apply", "/apply/*", "/flightpal", "/flightpal/*", "/csccreative"]
   },
   "vars": {
     "STEEL_DASHBOARD_ORIGIN": "https://steel-dashboard-lovat.vercel.app",

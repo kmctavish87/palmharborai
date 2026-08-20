@@ -6,6 +6,7 @@
 functions
 worker
 migrations
+apps
 .env.example
 wrangler.jsonc
 .wrangler.jsonc.swp

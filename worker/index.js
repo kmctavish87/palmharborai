@@ -13,6 +13,11 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
+    if (url.pathname === "/csccreative") {
+      url.pathname = "/csccreative/";
+      return Response.redirect(url.toString(), 301);
+    }
+
     if (url.pathname === "/steeldash" || url.pathname.startsWith("/steeldash/")) {
       return proxySteelDashboard(request, env);
     }
