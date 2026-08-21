@@ -17,9 +17,11 @@ import {
   X,
 } from "lucide-react";
 
+import { brandPromptContext } from "@/lib/catalog";
 import { BRANDS } from "@/lib/constants";
 import {
   convertImage,
+  createBriefConceptImage,
   downloadBlob,
   readImageDimensions,
   smartResizeImage,
@@ -27,15 +29,21 @@ import {
 } from "@/lib/image-processing";
 import { getAsset, saveAsset } from "@/lib/storage";
 import type {
+  AppSettings,
+  BrandProfile,
   CreativeActionResult,
   CreativeProject,
   CreativeVersion,
   Dimensions,
   Revision,
+  ReferenceAsset,
   StoredAsset,
+  CreativeStyleProfile,
 } from "@/lib/types";
 import { createId, dimensionsEqual, projectFilename } from "@/lib/utils";
 import { MockImageProvider } from "@/services/mock-image-provider";
+import { OpenAIImageProvider } from "@/services/openai-image-provider";
+import { BatchResizePanel } from "@/components/batch-resize-panel";
 import { Button, IconButton } from "@/components/ui";
 import { ChatPanel } from "@/components/chat-panel";
 import { CreativeCanvas } from "@/components/creative-canvas";
@@ -53,10 +61,18 @@ const EXPORT_TYPES = {
 
 export function CreativeWorkspace({
   project,
+  brands,
+  references,
+  styleProfiles,
+  settings,
   onUpdate,
   onBack,
 }: {
   project: CreativeProject;
+  brands: BrandProfile[];
+  references: ReferenceAsset[];
+  styleProfiles: CreativeStyleProfile[];
+  settings: AppSettings;
   onUpdate: (project: CreativeProject) => Promise<CreativeProject>;
   onBack: () => void;
 }) {
@@ -66,6 +82,9 @@ export function CreativeWorkspace({
   const [inspectorTab, setInspectorTab] = useState<InspectorTab>("assistant");
   const [exportFormat, setExportFormat] = useState<keyof typeof EXPORT_TYPES>("png");
   const [exporting, setExporting] = useState(false);
+  const [batchBusy, setBatchBusy] = useState(false);
+  const [batchResultIds, setBatchResultIds] = useState<string[]>([]);
+  const [outputMode, setOutputMode] = useState<"single" | "batch">("single");
   const [toast, setToast] = useState<Toast>();
   const uploadInput = useRef<HTMLInputElement>(null);
 
@@ -73,6 +92,9 @@ export function CreativeWorkspace({
     () => project.versions.find((version) => version.id === project.currentVersionId),
     [project.currentVersionId, project.versions],
   );
+  const brandProfile = useMemo(() => brands.find((brand) => brand.name === project.brand), [brands, project.brand]);
+  const activeReferences = useMemo(() => references.filter((reference) => reference.active), [references]);
+  const batchResults = useMemo(() => project.versions.filter((version) => batchResultIds.includes(version.id)), [batchResultIds, project.versions]);
   const currentAssetId = currentVersion?.assetId;
   const assetLoading = Boolean(currentAssetId && asset?.id !== currentAssetId);
   const currentIndex = currentVersion
@@ -162,6 +184,7 @@ export function CreativeWorkspace({
     count = 1,
     dimensions = project.outputDimensions,
     addRevision = true,
+    sourceBlobs,
   }: {
     instruction: string;
     actionLabel: string;
@@ -169,24 +192,27 @@ export function CreativeWorkspace({
     count?: number;
     dimensions?: Dimensions;
     addRevision?: boolean;
+    sourceBlobs?: Blob[];
   }) {
-    if (!asset || !currentVersion) throw new Error("Upload or select an asset first.");
+    if ((!asset || !currentVersion) && !sourceBlobs?.length) throw new Error("Upload a source or generate a starting concept first.");
     validateDimensions(dimensions);
     const now = new Date().toISOString();
     const newVersions: CreativeVersion[] = [];
 
     for (let index = 0; index < count; index += 1) {
-      const blob = await smartResizeImage(asset.blob, dimensions, "image/png");
+      const blob = sourceBlobs?.[index] ?? (asset ? await smartResizeImage(asset.blob, dimensions, "image/png") : undefined);
+      if (!blob) throw new Error("A generated image was not returned.");
       const assetId = createId("asset");
       await saveAsset({
-        ...asset,
         id: assetId,
+        projectId: project.id,
         filename: `${actionLabel.replace(/[^a-z0-9]+/gi, "-").toLowerCase() || "revision"}.png`,
         mimeType: "image/png",
         blob,
         width: dimensions.width,
         height: dimensions.height,
         createdAt: now,
+        ownershipType: asset?.ownershipType ?? "personal",
         isOriginal: false,
       });
       newVersions.push({
@@ -196,7 +222,7 @@ export function CreativeWorkspace({
         action: instruction,
         dimensions,
         createdAt: new Date(Date.now() + index).toISOString(),
-        sourceVersionId: currentVersion.id,
+        sourceVersionId: currentVersion?.id,
       });
     }
 
@@ -236,27 +262,66 @@ export function CreativeWorkspace({
   }
 
   async function requestCreativeAction(instruction: string) {
-    const provider = new MockImageProvider();
-    return provider.editImage({
+    const provider = settings.providerMode === "openai" ? new OpenAIImageProvider() : new MockImageProvider();
+    const referenceImages = (await Promise.all((project.selectedReferenceIds ?? []).slice(0, 3).map(async (id) => {
+      const reference = references.find((item) => item.id === id);
+      return reference ? (await getAsset(reference.assetId))?.blob : undefined;
+    }))).filter((blob): blob is Blob => Boolean(blob));
+    const linkedProfiles = styleProfiles.filter((profile) => profile.referenceIds.some((id) => project.selectedReferenceIds?.includes(id)));
+    const styleContext = linkedProfiles.map((profile) => `${profile.name}: ${profile.typographyHierarchy} ${profile.layoutPatterns} ${profile.brandColorUsage}`).join("\n");
+    const request = {
       instruction,
       currentDimensions: currentVersion?.dimensions,
       projectName: project.name,
       brand: project.brand,
       campaign: project.campaign,
-    }) satisfies Promise<CreativeActionResult>;
+      brief: project.brief,
+      brandContext: `${brandPromptContext(brandProfile)}${styleContext ? `\nCreative style guidance:\n${styleContext}` : ""}`,
+      outputDimensions: currentVersion?.dimensions ?? project.outputDimensions,
+      sourceImage: asset?.mimeType === "application/pdf" ? undefined : asset?.blob,
+      referenceImages,
+      imageQuality: settings.imageQuality,
+      accessCode: settings.accessCode,
+    };
+    return asset ? provider.editImage(request) : provider.generateImage(request);
   }
 
   async function submitInstruction(instruction: string) {
-    if (!asset || !currentVersion) return;
     setAssistantBusy(true);
     try {
-      const result = await requestCreativeAction(instruction);
+      let result: CreativeActionResult;
+      try {
+        result = await requestCreativeAction(instruction);
+      } catch (cause) {
+        if (settings.providerMode !== "openai" || !settings.autoFallback) throw cause;
+        showToast("error", "OpenAI was unavailable, so a local production fallback was created.");
+        result = await new MockImageProvider().editImage({ instruction, currentDimensions: currentVersion?.dimensions, projectName: project.name, brand: project.brand, campaign: project.campaign });
+      }
+      const targetDimensions = result.dimensions ?? currentVersion?.dimensions ?? project.outputDimensions;
+      let sourceBlobs = result.imageBlob ? [await smartResizeImage(result.imageBlob, targetDimensions, "image/png")] : undefined;
+      if (!asset && !result.imageBlob) {
+        sourceBlobs = [await createBriefConceptImage(targetDimensions, {
+          brand: project.brand,
+          headline: project.brief?.headline || instruction,
+          offer: project.brief?.offer || project.brief?.supportingCopy || "",
+          cta: project.brief?.cta || "Learn more",
+          colors: brandProfile?.colors ?? ["#123b2b", "#f07a44", "#c9f4de"],
+        })];
+      }
+      const requestedCount = result.variationCount ?? (/\b(three|3)\b.*\b(variation|version)/i.test(instruction) ? 3 : 1);
+      if (result.imageBlob && requestedCount > 1 && settings.providerMode === "openai") {
+        for (let index = 1; index < requestedCount; index += 1) {
+          const variation = await requestCreativeAction(`${instruction}\nCreate a clearly distinct composition for variation ${index + 1}.`);
+          if (variation.imageBlob) sourceBlobs?.push(await smartResizeImage(variation.imageBlob, targetDimensions, "image/png"));
+        }
+      }
       await createDerivedVersions({
         instruction,
         actionLabel: result.actionLabel,
         message: result.message,
-        count: result.variationCount ?? 1,
-        dimensions: result.dimensions ?? currentVersion.dimensions,
+        count: sourceBlobs?.length ?? requestedCount,
+        dimensions: targetDimensions,
+        sourceBlobs,
       });
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "The creative request failed.";
@@ -273,6 +338,35 @@ export function CreativeWorkspace({
     } finally {
       setAssistantBusy(false);
     }
+  }
+
+  async function createBatchOutputs(dimensionsList: Dimensions[]) {
+    if (!asset || !currentVersion) return;
+    setBatchBusy(true);
+    try {
+      const now = new Date().toISOString();
+      const versions: CreativeVersion[] = [];
+      for (const dimensions of dimensionsList) {
+        const blob = await smartResizeImage(asset.blob, dimensions, "image/png");
+        const assetId = createId("asset");
+        await saveAsset({ ...asset, id: assetId, filename: `batch-${dimensions.width}x${dimensions.height}.png`, mimeType: "image/png", blob, width: dimensions.width, height: dimensions.height, createdAt: now, isOriginal: false });
+        versions.push({ id: createId("version"), assetId, name: `${dimensions.width} × ${dimensions.height}`, action: "Batch resize with protected composition", dimensions, createdAt: new Date(Date.now() + versions.length).toISOString(), sourceVersionId: currentVersion.id });
+      }
+      const revision: Revision = { id: createId("revision"), instruction: `Create ${dimensionsList.length} production sizes`, aiAction: "Created a non-destructive batch with fit-aware recomposition for each canvas.", createdAt: now, resultingVersionIds: versions.map((version) => version.id), status: "completed" };
+      await onUpdate({ ...project, versions: [...project.versions, ...versions], revisions: [...project.revisions, revision], currentVersionId: versions[0]?.id, outputDimensions: versions[0]?.dimensions ?? project.outputDimensions, modifiedAt: now });
+      setBatchResultIds(versions.map((version) => version.id));
+      showToast("success", `${versions.length} production outputs created.`);
+    } catch (cause) {
+      showToast("error", cause instanceof Error ? cause.message : "Batch resizing failed.");
+    } finally {
+      setBatchBusy(false);
+    }
+  }
+
+  function toggleReference(id: string) {
+    const current = project.selectedReferenceIds ?? [];
+    const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id].slice(-3);
+    void updateProject({ selectedReferenceIds: next });
   }
 
   async function changeDimensions(dimensions: Dimensions, remember = false) {
@@ -432,15 +526,15 @@ export function CreativeWorkspace({
             <button className={inspectorTab === "history" ? "is-active" : ""} onClick={() => setInspectorTab("history")}><History size={16} /> History</button>
           </div>
           {inspectorTab === "assistant" ? (
-            <ChatPanel revisions={project.revisions} disabled={!asset} busy={assistantBusy} onSubmit={submitInstruction} />
+            <div className="assistant-stack">
+              {activeReferences.length ? <details className="reference-picker"><summary>Style references <span>{project.selectedReferenceIds?.length ?? 0}/3 selected</span></summary><div>{activeReferences.map((reference) => { const selected = project.selectedReferenceIds?.includes(reference.id); return <button key={reference.id} className={selected ? "is-selected" : ""} onClick={() => toggleReference(reference.id)}><span>{selected ? <Check size={10} /> : null}</span><div><strong>{reference.title}</strong><small>{reference.brand} · {reference.category}</small></div></button>; })}</div><p>Selected files are sent only as context for an explicit OpenAI request.</p></details> : null}
+              <ChatPanel revisions={project.revisions} disabled={false} busy={assistantBusy} providerMode={settings.providerMode} hasSource={Boolean(asset)} onSubmit={submitInstruction} />
+            </div>
           ) : inspectorTab === "output" ? (
-            <DimensionPicker
-              value={project.outputDimensions}
-              recent={project.recentCustomDimensions}
-              disabled={!asset}
-              onChange={(dimensions, remember) => void changeDimensions(dimensions, remember)}
-              onCreate={createResize}
-            />
+            <div className="output-stack">
+              <div className="output-mode"><button className={outputMode === "single" ? "is-active" : ""} onClick={() => setOutputMode("single")}>Single size</button><button className={outputMode === "batch" ? "is-active" : ""} onClick={() => setOutputMode("batch")}>Batch sizes</button></div>
+              {outputMode === "single" ? <DimensionPicker value={project.outputDimensions} recent={project.recentCustomDimensions} disabled={!asset} onChange={(dimensions, remember) => void changeDimensions(dimensions, remember)} onCreate={createResize} /> : <BatchResizePanel disabled={!asset} busy={batchBusy} results={batchResults} onCreate={createBatchOutputs} onOpen={(version) => void restoreVersion(version)} />}
+            </div>
           ) : (
             <VersionHistory
               versions={project.versions}

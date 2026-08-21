@@ -23,12 +23,16 @@ export function ProjectDashboard({
   onCreate,
   onOpen,
   onDelete,
+  role,
+  onOpenLogoExporter,
 }: {
   projects: CreativeProject[];
   loading: boolean;
   onCreate: () => void;
   onOpen: (project: CreativeProject) => void;
   onDelete: (project: CreativeProject) => Promise<void>;
+  role: "designer" | "standard";
+  onOpenLogoExporter: () => void;
 }) {
   const [query, setQuery] = useState("");
   const [openMenu, setOpenMenu] = useState<string>();
@@ -56,21 +60,18 @@ export function ProjectDashboard({
           <h1>Good morning, Kyle.</h1>
           <p>Turn finished ideas into every format your campaign needs.</p>
         </div>
-        <Button variant="primary" icon={<Plus size={17} />} onClick={onCreate}>
-          New project
-        </Button>
+        {role === "designer" ? <Button variant="primary" icon={<Plus size={17} />} onClick={onCreate}>New project</Button> : null}
       </header>
 
       <section className="dashboard__hero">
         <div className="dashboard__hero-copy">
-          <span className="hero-kicker"><Sparkles size={14} /> Production, accelerated</span>
-          <h2>Your design stays yours.<br />The repetitive work doesn’t.</h2>
+          <span className="hero-kicker"><Sparkles size={14} /> {role === "designer" ? "Production, accelerated" : "Approved self-service"}</span>
+          <h2>{role === "designer" ? <>Your design stays yours.<br />The repetitive work doesn’t.</> : <>The right logo.<br />The right size. Every time.</>}</h2>
           <p>
-            Upload approved creative, recompose it for new channels, and keep every
-            decision in one non-destructive workspace.
+            {role === "designer" ? "Upload approved creative, recompose it for new channels, and keep every decision in one non-destructive workspace." : "Choose an approved brand asset, set the dimensions you need, and export a protected copy without editing the source."}
           </p>
-          <Button variant="primary" icon={<ArrowUpRight size={17} />} onClick={onCreate}>
-            Start from an asset
+          <Button variant="primary" icon={<ArrowUpRight size={17} />} onClick={role === "designer" ? onCreate : onOpenLogoExporter}>
+            {role === "designer" ? "Start from an asset" : "Open Logo Exporter"}
           </Button>
         </div>
         <div className="format-stack" aria-hidden="true">
@@ -151,7 +152,7 @@ export function ProjectDashboard({
             icon={<LayoutGrid size={24} />}
             title={query ? "No projects match" : "Your first project starts here"}
             description={query ? "Try another project, brand, or campaign name." : "Create a workspace, upload an approved asset, and produce the formats you need."}
-            action={!query ? <Button variant="primary" icon={<Plus size={16} />} onClick={onCreate}>Create a project</Button> : undefined}
+            action={!query && role === "designer" ? <Button variant="primary" icon={<Plus size={16} />} onClick={onCreate}>Create a project</Button> : undefined}
           />
         )}
       </section>

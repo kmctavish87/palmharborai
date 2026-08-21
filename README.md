@@ -69,6 +69,7 @@ What it includes:
 Create environment variables locally and in Cloudflare:
 
 - `OPENAI_API_KEY`
+- `CSC_CREATIVE_ACCESS_TOKEN` - required access code for hosted CSC Creative image requests
 - `NEWS_API_KEY`
 - `NCBI_API_KEY`
 - `EUROPE_PMC_API_KEY` (optional placeholder for future expansion)
@@ -158,3 +159,4 @@ Open `index.html` directly in a browser, or serve the directory with any simple 
 - The Resume Tailor route is available at `/apply` when `RESUME_TAILOR_ORIGIN` is configured. The Dockerized app source lives in `resume-tailor/`.
 - The FlightPal route is available at `/flightpal` when `FLIGHTPAL_ORIGIN` is configured. FlightPal should be deployed with `NEXT_PUBLIC_BASE_PATH=/flightpal`.
 - The CSC Creative Studio is available at `/csccreative`. Rebuild its checked-in static bundle with `npm --prefix apps/csccreative run build:static`, then copy `apps/csccreative/out/` into `csccreative/` before deployment.
+- CSC Creative uses local IndexedDB for private project/library persistence and calls the Worker at `/api/csccreative/image` only when OpenAI mode is explicitly selected.

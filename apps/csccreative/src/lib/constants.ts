@@ -36,13 +36,15 @@ export const QUICK_ACTIONS = [
   "Simplify the layout",
   "Make more on-brand",
   "Create a social version",
+  "Increase contrast",
+  "Shorten the supporting copy",
 ];
 
 export const NAV_ITEMS = [
   { id: "projects", label: "Projects" },
   { id: "new", label: "New creative" },
-  { id: "references", label: "Reference library", phase: "03" },
-  { id: "brands", label: "Brand library", phase: "03" },
-  { id: "logos", label: "Logo exporter", phase: "04" },
+  { id: "references", label: "Reference library" },
+  { id: "brands", label: "Brand library" },
+  { id: "logos", label: "Logo exporter" },
   { id: "settings", label: "Settings" },
 ] as const;

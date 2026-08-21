@@ -1,9 +1,20 @@
-import type { CreativeProject, StoredAsset } from "@/lib/types";
+import type {
+  AppSettings,
+  BrandProfile,
+  CreativeProject,
+  CreativeStyleProfile,
+  ReferenceAsset,
+  StoredAsset,
+} from "@/lib/types";
 
 const DB_NAME = "csc-creative-studio";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const PROJECTS = "projects";
 const ASSETS = "assets";
+const BRANDS = "brands";
+const REFERENCES = "references";
+const STYLE_PROFILES = "styleProfiles";
+const SETTINGS = "settings";
 
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -17,10 +28,34 @@ function openDatabase(): Promise<IDBDatabase> {
         const assets = database.createObjectStore(ASSETS, { keyPath: "id" });
         assets.createIndex("projectId", "projectId", { unique: false });
       }
+      if (!database.objectStoreNames.contains(BRANDS)) {
+        database.createObjectStore(BRANDS, { keyPath: "id" });
+      }
+      if (!database.objectStoreNames.contains(REFERENCES)) {
+        database.createObjectStore(REFERENCES, { keyPath: "id" });
+      }
+      if (!database.objectStoreNames.contains(STYLE_PROFILES)) {
+        database.createObjectStore(STYLE_PROFILES, { keyPath: "id" });
+      }
+      if (!database.objectStoreNames.contains(SETTINGS)) {
+        database.createObjectStore(SETTINGS, { keyPath: "id" });
+      }
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
   });
+}
+
+async function listRecords<T>(storeName: string) {
+  return storeRequest<T[]>(storeName, "readonly", (store) => store.getAll());
+}
+
+function saveRecord<T>(storeName: string, record: T) {
+  return storeRequest<IDBValidKey>(storeName, "readwrite", (store) => store.put(record));
+}
+
+function removeRecord(storeName: string, id: string) {
+  return storeRequest<undefined>(storeName, "readwrite", (store) => store.delete(id));
 }
 
 function requestResult<T>(request: IDBRequest<T>): Promise<T> {
@@ -84,6 +119,46 @@ export function getAsset(id: string) {
   return storeRequest<StoredAsset | undefined>(ASSETS, "readonly", (store) =>
     store.get(id),
   );
+}
+
+export function removeAsset(id: string) {
+  return removeRecord(ASSETS, id);
+}
+
+export function listBrands() {
+  return listRecords<BrandProfile>(BRANDS);
+}
+
+export function saveBrand(brand: BrandProfile) {
+  return saveRecord(BRANDS, brand);
+}
+
+export function listReferences() {
+  return listRecords<ReferenceAsset>(REFERENCES);
+}
+
+export function saveReference(reference: ReferenceAsset) {
+  return saveRecord(REFERENCES, reference);
+}
+
+export function removeReference(id: string) {
+  return removeRecord(REFERENCES, id);
+}
+
+export function listStyleProfiles() {
+  return listRecords<CreativeStyleProfile>(STYLE_PROFILES);
+}
+
+export function saveStyleProfile(profile: CreativeStyleProfile) {
+  return saveRecord(STYLE_PROFILES, profile);
+}
+
+export async function getSettings() {
+  return storeRequest<AppSettings | undefined>(SETTINGS, "readonly", (store) => store.get("app"));
+}
+
+export function saveSettings(settings: AppSettings) {
+  return saveRecord(SETTINGS, settings);
 }
 
 export async function removeAssetsForProject(projectId: string) {

@@ -24,10 +24,15 @@ const ICONS = {
 export function AppSidebar({
   active,
   onNavigate,
+  role,
 }: {
   active: string;
   onNavigate: (id: string) => void;
+  role: "designer" | "standard";
 }) {
+  const navItems = role === "standard"
+    ? NAV_ITEMS.filter((item) => ["projects", "logos", "settings"].includes(item.id))
+    : NAV_ITEMS;
   return (
     <aside className="app-sidebar">
       <button className="brand-mark" onClick={() => onNavigate("projects")}>
@@ -39,7 +44,7 @@ export function AppSidebar({
       </button>
       <nav className="app-nav" aria-label="Primary navigation">
         <p className="app-nav__label">Workspace</p>
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const Icon = ICONS[item.id];
           return (
             <button
@@ -49,7 +54,6 @@ export function AppSidebar({
             >
               <Icon size={18} strokeWidth={1.8} />
               <span>{item.label}</span>
-              {"phase" in item ? <small>{item.phase}</small> : null}
             </button>
           );
         })}
@@ -65,7 +69,7 @@ export function AppSidebar({
         <div className="avatar">KM</div>
         <div>
           <strong>Creative team</strong>
-          <small>Designer access</small>
+          <small>{role === "designer" ? "Designer access" : "Standard access"}</small>
         </div>
       </div>
     </aside>

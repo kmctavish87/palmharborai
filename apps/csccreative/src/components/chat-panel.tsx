@@ -13,11 +13,15 @@ export function ChatPanel({
   disabled,
   busy,
   onSubmit,
+  providerMode,
+  hasSource,
 }: {
   revisions: Revision[];
   disabled?: boolean;
   busy: boolean;
   onSubmit: (instruction: string) => Promise<void>;
+  providerMode: "mock" | "openai";
+  hasSource: boolean;
 }) {
   const [instruction, setInstruction] = useState("");
 
@@ -32,12 +36,12 @@ export function ChatPanel({
     <section className="chat-panel">
       <div className="chat-panel__heading">
         <div className="ai-avatar"><Sparkles size={16} /></div>
-        <div><h3>Creative assistant</h3><p><span /> Mock mode · ready</p></div>
+        <div><h3>Creative assistant</h3><p><span /> {providerMode === "openai" ? "OpenAI mode" : "Local mode"} · ready</p></div>
       </div>
       <div className="chat-scroll">
         <div className="chat-message chat-message--assistant">
           <div className="chat-message__author"><Bot size={13} /> Studio assistant</div>
-          <p>{disabled ? "Upload a creative and I’ll help build revisions and production formats." : "I’m working from the current version. Tell me what to change or which format you need."}</p>
+          <p>{hasSource ? "I’m working from the current version. Tell me what to change or which format you need." : "I’ll use the saved brief to build a starting concept, or you can upload an approved source."}</p>
         </div>
         {revisions.map((revision) => (
           <div className="chat-exchange" key={revision.id}>
@@ -54,7 +58,7 @@ export function ChatPanel({
         ) : null}
       </div>
       <div className="quick-actions">
-        {QUICK_ACTIONS.slice(0, 4).map((action) => (
+        {QUICK_ACTIONS.map((action) => (
           <button key={action} disabled={disabled || busy} onClick={() => void submit(action)}>{action}</button>
         ))}
       </div>
@@ -68,7 +72,7 @@ export function ChatPanel({
               void submit();
             }
           }}
-          placeholder={disabled ? "Upload an asset to begin…" : "Describe a revision…"}
+          placeholder={hasSource ? "Describe a revision…" : "Describe a starting concept…"}
           disabled={disabled}
           rows={3}
         />
@@ -79,7 +83,7 @@ export function ChatPanel({
           </IconButton>
         </div>
       </div>
-      <p className="chat-disclaimer">Mock revisions test workflow only. No asset is used for model training.</p>
+      <p className="chat-disclaimer">{providerMode === "openai" ? "Only explicit requests and selected references are sent to the configured provider." : "Local production mode uses no paid model calls."} No asset is used for model training by this app.</p>
     </section>
   );
 }

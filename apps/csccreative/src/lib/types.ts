@@ -38,6 +38,10 @@ export interface CreativeProject {
   revisions: Revision[];
   outputDimensions: Dimensions;
   recentCustomDimensions: Dimensions[];
+  brief?: CreativeBrief;
+  channel?: string;
+  assetType?: string;
+  selectedReferenceIds?: string[];
 }
 
 export interface StoredAsset {
@@ -65,6 +69,13 @@ export interface CreativeActionRequest {
   projectName: string;
   brand: string;
   campaign: string;
+  brief?: CreativeBrief;
+  brandContext?: string;
+  outputDimensions?: Dimensions;
+  sourceImage?: Blob;
+  referenceImages?: Blob[];
+  imageQuality?: ImageQuality;
+  accessCode?: string;
 }
 
 export interface CreativeActionResult {
@@ -73,4 +84,80 @@ export interface CreativeActionResult {
   actionLabel: string;
   dimensions?: Dimensions;
   variationCount?: number;
+  imageBlob?: Blob;
+  provider?: "mock" | "openai";
+}
+
+export interface CreativeBrief {
+  objective: string;
+  audience: string;
+  offer: string;
+  headline: string;
+  supportingCopy: string;
+  cta: string;
+  creativeDirection: string;
+  channel: string;
+  assetType: string;
+  description: string;
+}
+
+export interface BrandProfile {
+  id: string;
+  name: string;
+  colors: string[];
+  fonts: string[];
+  approvedMessaging: string;
+  prohibitedMessaging: string;
+  disclaimers: string;
+  ctaConventions: string;
+  notes: string;
+  logoAssetIds: string[];
+  exampleAssetIds: string[];
+  updatedAt: string;
+}
+
+export interface ReferenceAsset {
+  id: string;
+  title: string;
+  brand: string;
+  campaign: string;
+  category: string;
+  tags: string[];
+  notes: string;
+  active: boolean;
+  assetId: string;
+  ownershipType: OwnershipType;
+  createdAt: string;
+  styleProfileId?: string;
+}
+
+export interface CreativeStyleProfile {
+  id: string;
+  name: string;
+  brand: string;
+  referenceIds: string[];
+  typographyHierarchy: string;
+  textPlacement: string;
+  whitespace: string;
+  imagery: string;
+  ctaPlacement: string;
+  logoPlacement: string;
+  headlineLength: string;
+  visualDensity: string;
+  layoutPatterns: string;
+  brandColorUsage: string;
+  updatedAt: string;
+}
+
+export type UserRole = "designer" | "standard";
+export type ProviderMode = "mock" | "openai";
+export type ImageQuality = "low" | "medium" | "high";
+
+export interface AppSettings {
+  id: "app";
+  role: UserRole;
+  providerMode: ProviderMode;
+  imageQuality: ImageQuality;
+  autoFallback: boolean;
+  accessCode?: string;
 }

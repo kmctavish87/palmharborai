@@ -136,6 +136,101 @@ export async function convertImage(source: Blob, mimeType: string) {
   return smartResizeImage(source, dimensions, mimeType);
 }
 
+export async function exportLogoImage(
+  source: Blob,
+  dimensions: Dimensions,
+  options: {
+    mimeType: "image/png" | "image/jpeg" | "image/webp";
+    background: "transparent" | "white";
+    padding: number;
+    mode: "fit" | "exact";
+  },
+) {
+  validateDimensions(dimensions);
+  const url = URL.createObjectURL(source);
+  try {
+    const image = await loadImage(url);
+    const canvas = document.createElement("canvas");
+    canvas.width = dimensions.width;
+    canvas.height = dimensions.height;
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Canvas is unavailable in this browser.");
+    if (options.background === "white" || options.mimeType === "image/jpeg") {
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, dimensions.width, dimensions.height);
+    }
+    const maxPadding = Math.max(0, Math.floor(Math.min(dimensions.width, dimensions.height) / 2) - 1);
+    const padding = Math.min(Math.max(0, options.padding), maxPadding);
+    if (options.mode === "exact") {
+      context.drawImage(image, padding, padding, dimensions.width - padding * 2, dimensions.height - padding * 2);
+    } else {
+      drawContain(context, image, dimensions.width, dimensions.height, padding);
+    }
+    return canvasBlob(canvas, options.mimeType);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+export async function createBriefConceptImage(
+  dimensions: Dimensions,
+  content: { brand: string; headline: string; offer: string; cta: string; colors: string[] },
+) {
+  validateDimensions(dimensions);
+  const canvas = document.createElement("canvas");
+  canvas.width = dimensions.width;
+  canvas.height = dimensions.height;
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Canvas is unavailable in this browser.");
+  const [primary = "#123b2b", accent = "#f07a44", soft = "#c9f4de"] = content.colors;
+  context.fillStyle = primary;
+  context.fillRect(0, 0, dimensions.width, dimensions.height);
+  const unit = Math.min(dimensions.width, dimensions.height);
+  context.fillStyle = soft;
+  context.beginPath();
+  context.arc(dimensions.width * 0.86, dimensions.height * 0.12, unit * 0.34, 0, Math.PI * 2);
+  context.fill();
+  context.globalAlpha = 0.16;
+  context.fillStyle = "#ffffff";
+  context.beginPath();
+  context.arc(dimensions.width * 0.82, dimensions.height * 0.78, unit * 0.43, 0, Math.PI * 2);
+  context.fill();
+  context.globalAlpha = 1;
+  const pad = dimensions.width * 0.075;
+  const headline = content.headline || content.offer || "Starting creative concept";
+  context.fillStyle = "#ffffff";
+  context.font = `700 ${Math.max(28, Math.round(unit * 0.085))}px Arial`;
+  context.textBaseline = "top";
+  const maxWidth = dimensions.width * 0.68;
+  const words = headline.split(/\s+/);
+  const lines: string[] = [];
+  let line = "";
+  for (const word of words) {
+    const candidate = line ? `${line} ${word}` : word;
+    if (context.measureText(candidate).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else line = candidate;
+  }
+  if (line) lines.push(line);
+  lines.slice(0, 4).forEach((item, index) => context.fillText(item, pad, dimensions.height * 0.23 + index * unit * 0.105));
+  context.fillStyle = "rgba(255,255,255,.78)";
+  context.font = `600 ${Math.max(12, Math.round(unit * 0.026))}px Arial`;
+  context.fillText(content.brand, pad, pad);
+  if (content.offer) context.fillText(content.offer.slice(0, 70), pad, dimensions.height * 0.69);
+  context.fillStyle = accent;
+  const buttonWidth = Math.min(dimensions.width * 0.42, Math.max(160, context.measureText(content.cta || "Learn more").width + unit * 0.1));
+  const buttonHeight = Math.max(44, unit * 0.075);
+  context.beginPath();
+  context.roundRect(pad, dimensions.height * 0.78, buttonWidth, buttonHeight, buttonHeight / 2);
+  context.fill();
+  context.fillStyle = "#ffffff";
+  context.font = `700 ${Math.max(13, Math.round(unit * 0.025))}px Arial`;
+  context.textBaseline = "middle";
+  context.fillText(content.cta || "Learn more", pad + buttonHeight * 0.45, dimensions.height * 0.78 + buttonHeight / 2);
+  return canvasBlob(canvas, "image/png");
+}
+
 export function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
